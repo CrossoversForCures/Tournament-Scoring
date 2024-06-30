@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/CrossoversForCures/Tournament-Scoring/models"
 )
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,23 +43,11 @@ func main() {
 	}()
 
 	coll := client.Database("tournament_scoring").Collection("tournaments")
-	newTournament := Tournament{}
-	title := "Back to the Future"
+	newTournament := models.Tournament{Name: "E4E 2024", Date: time.Now(), Status: "Active"}
 
-	var result bson.M
-	err = coll.FindOne(context.TODO(), bson.D{{"title", title}}).
-		Decode(&result)
-	if err == mongo.ErrNoDocuments {
-		fmt.Printf("No document was found with the title %s\n", title)
-		return
-	}
+	result, err := coll.InsertOne(context.TODO(), newTournament)
 	if err != nil {
 		panic(err)
 	}
-
-	jsonData, err := json.MarshalIndent(result, "", "    ")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%s\n", jsonData)
+	fmt.Printf("Document inserted with ID: %s\n", result.InsertedID)
 }
