@@ -17,7 +17,7 @@ import (
 )
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	// fmt.Fprintf(w, "<h1>Hi</h1>")
+	fmt.Fprintf(w, "<h1>Hi</h1>")
 	filter := bson.D{{Key: "status", Value: "Active"}}
 	var result models.Tournament
 	err = coll.FindOne(context.TODO(), filter).Decode(&result)
@@ -33,8 +33,10 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
+	w.Write(output)
+
 	fmt.Printf("%s\n", output)
-	fmt.Fprintf(w, "<h1>Welcome to %v!</h1>", result.Name)
+	//fmt.Fprintf(w, "<h1>Welcome to %v!</h1>", result.Name)
 }
 
 func teamsHandler(w http.ResponseWriter, r *http.Request) {
