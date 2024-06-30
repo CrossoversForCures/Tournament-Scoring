@@ -4,18 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
-var collection *mongo.Collection
-var ctx = context.TODO()
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<h1>Home page</h1>")
@@ -34,18 +29,8 @@ func teamsHandler(w http.ResponseWriter, r *http.Request) {
 // }
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
-	}
-
-	uri := os.Getenv("MONGODB_URI")
-	if uri == "" {
-		log.Fatal("Set your 'MONGODB_URI' environment variable. " +
-			"See: " +
-			"www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
-	}
-	client, err := mongo.Connect(context.TODO(), options.Client().
-		ApplyURI(uri))
+	uri := os.Getenv("DATABASE_URL")
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
 	if err != nil {
 		panic(err)
 	}
@@ -56,7 +41,8 @@ func main() {
 		}
 	}()
 
-	coll := client.Database("sample_mflix").Collection("movies")
+	coll := client.Database("tournament_scoring").Collection("tournaments")
+	newTournament := Tournament{}
 	title := "Back to the Future"
 
 	var result bson.M
