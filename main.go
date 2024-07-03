@@ -67,7 +67,7 @@ func main() {
 
 	coll = client.Database("tournament_scoring").Collection("tournaments")
 
-	http.HandleFunc("/", homeHandler)
+	http.HandleFunc("/api", homeHandler)
 	fmt.Println("Starting server on port 8000")
 	http.ListenAndServe(":8000", nil)
 	// 	newTournament := models.Tournament{Name: "E4E 2024", Date: time.Now(), Status: "Active"}
