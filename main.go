@@ -42,17 +42,17 @@ func tournamentHandler(w http.ResponseWriter, r *http.Request) {
 
 func tournamentStartHandler(w http.ResponseWriter, r *http.Request) {
 	filter := bson.D{{Key: "status", Value: "Registering"}}
-	update := bson.D{{"$set", bson.D{{"status", "Active"}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: "Active"}}}}
 
-	_, err := coll.UpdateOne(context.TODO(), filter, update)
+	result, err := coll.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			w.WriteHeader(http.StatusNotFound)
-			errorResponse := map[string]string{"error": "No available tournaments to start"}
-			json.NewEncoder(w).Encode(errorResponse)
-			return
-		}
 		panic(err)
+	}
+	if result.ModifiedCount != 1 {
+		w.WriteHeader(http.StatusNotFound)
+		errorResponse := map[string]string{"error": "No available tournaments to start"}
+		json.NewEncoder(w).Encode(errorResponse)
+		return
 	}
 }
 func main() {
