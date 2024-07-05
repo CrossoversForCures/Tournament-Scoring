@@ -4,89 +4,45 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
-	"os"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/CrossoversForCures/Tournament-Scoring/models"
-	"github.com/joho/godotenv"
 )
 
-var coll *mongo.Collection
 var err error
 
-func tournamentHandler(w http.ResponseWriter, r *http.Request) {
-	filter := bson.D{{Key: "status", Value: "Active"}}
-	var result models.Tournament
-	err = coll.FindOne(context.TODO(), filter).Decode(&result)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			w.WriteHeader(http.StatusNotFound)
-			errorResponse := map[string]string{"error": "No available tournaments found"}
-			json.NewEncoder(w).Encode(errorResponse)
-			return
-		}
-		panic(err)
-	}
-
-	output, err := json.MarshalIndent(result, "", "    ")
+func eventsHandler(w http.ResponseWriter, r *http.Request) {
+	cursor, err := models.EventsCollection.Find(context.TODO(), bson.D{})
 	if err != nil {
 		panic(err)
 	}
-	w.Write(output)
-}
 
-func tournamentStartHandler(w http.ResponseWriter, r *http.Request) {
-	filter := bson.D{{Key: "status", Value: "Registering"}}
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: "Active"}}}}
-
-	result, err := coll.UpdateOne(context.TODO(), filter, update)
-	if err != nil {
+	var results []models.Event
+	if err = cursor.All(context.TODO(), &results); err != nil {
 		panic(err)
 	}
-	if result.ModifiedCount != 1 {
+	if len(results) == 0 {
 		w.WriteHeader(http.StatusNotFound)
-		errorResponse := map[string]string{"error": "No available tournaments to start"}
+		errorResponse := map[string]string{"error": "No events found"}
 		json.NewEncoder(w).Encode(errorResponse)
-		return
-	}
-}
-func main() {
-	// Load .env file
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
-	}
-
-	// Connect to database
-	uri := os.Getenv("DATABASE_URL")
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
-	if err != nil {
-		panic(err)
-	}
-
-	defer func() {
-		if err := client.Disconnect(context.TODO()); err != nil {
+	} else {
+		response, err := json.Marshal(results)
+		if err != nil {
 			panic(err)
 		}
-	}()
+		json.NewEncoder(w).Encode(response)
+	}
 
-	coll = client.Database("tournament_scoring").Collection("tournaments")
+}
+
+func main() {
+	models.ConnectDB()
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /api/tournament", tournamentHandler)
-	mux.HandleFunc("POST /api/tournament/start", tournamentStartHandler)
+	mux.HandleFunc("GET /api/events", eventsHandler)
 	fmt.Println("Starting server on port 8000")
 	http.ListenAndServe(":8000", mux)
-	// 	newTournament := models.Tournament{Name: "E4E 2024", Date: time.Now(), Status: "Active"}
-
-	// 	result, err := coll.InsertOne(context.TODO(), newTournament)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	fmt.Printf("Document inserted with ID: %s\n", result.InsertedID)
 }

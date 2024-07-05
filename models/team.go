@@ -4,11 +4,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Team model
 type Team struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty"`
 	Name         string
 	TournamentID primitive.ObjectID `bson:"tournament_id"`
+	EventID      primitive.ObjectID `bson:"event_id"`
 	Player1      string
 	Player2      string
 	Player3      string
@@ -16,5 +16,5 @@ type Team struct {
 	Games        []primitive.ObjectID
 	Seed         int
 	PostSeed     int `bson:"post_seed"`
-	FinalRank    int `bson:"final_rank"`
+	Final        int
 }
