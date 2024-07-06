@@ -14,6 +14,7 @@ import (
 
 func eventsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
 	cursor, err := models.EventsCollection.Find(context.TODO(), bson.D{})
 	if err != nil {
 		panic(err)
@@ -35,6 +36,7 @@ func eventsHandler(w http.ResponseWriter, r *http.Request) {
 func teamsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	event_id := r.PathValue("event_id")
+
 	var result models.Event
 	err := models.EventsCollection.FindOne(context.TODO(), bson.D{{Key: "ID", Value: event_id}}).Decode(&result)
 	if err != nil {
