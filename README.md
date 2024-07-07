@@ -24,6 +24,16 @@ As a spectator, I want to view the final scores of the pool play games, the stan
 1. As an administrator, I want to input the final scores of the pool play games, so I can ensure the proper seeding of teams in the single elimination bracket.
 2. As an administrator, I want to input the final scores of the single elimination bracket games, so I can commemorate the winning team.
 
+## API Requirements
+GET `/api/tournaments` returns list of tournaments as JSON, split into active and inactive (archive)  
+GET `/api/teams` returns list of teams as JSON  
+POST `/api/teams` accepts a new team to be added  
+GET `/api/game/:id` returns information about a game as JSON  
+PUT `/api/game/:id` updates the results of a game  
+
+The backend will also create a new tournament in the database after the current one finishes and generate the pool and elimination bracket based on standings.
+
+
 ## Usage
 [Instructions on how to use the application, including any command-line interfaces, APIs, etc.]
 
