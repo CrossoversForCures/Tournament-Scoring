@@ -1,20 +1,16 @@
-package models
+package configs
 
 import (
 	"context"
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-
-	"github.com/joho/godotenv"
 )
 
-var EventsCollection *mongo.Collection
-var TeamsCollection *mongo.Collection
-
-func ConnectDB() {
+func ConnectDB() *mongo.Client {
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
@@ -27,6 +23,14 @@ func ConnectDB() {
 		panic(err)
 	}
 
-	EventsCollection = client.Database("tournament_scoring").Collection("events")
-	TeamsCollection = client.Database("tournament_scoring").Collection("teams")
+	return client
+}
+
+// Client instance
+var DB *mongo.Client = ConnectDB()
+
+// getting database collections
+func GetCollection(client *mongo.Client, collectionName string) *mongo.Collection {
+	collection := client.Database("tournament-scoring").Collection(collectionName)
+	return collection
 }

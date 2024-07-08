@@ -3,27 +3,20 @@ package models
 import (
 	"context"
 
+	"github.com/CrossoversForCures/Tournament-Scoring/configs"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Team struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty"`
-	Name     string
-	EventID  primitive.ObjectID `bson:"event_id"`
-	Player1  string
-	Player2  string
-	Player3  string
-	Group    string
-	Games    []primitive.ObjectID
-	Seed     int
-	PostSeed int `bson:"post_seed"`
-	Final    int
+	ID          primitive.ObjectID `bson:"_id,omitempty"`
+	Name        string
+	Event       primitive.ObjectID `bson:"event_id"`
+	PoolsPlayed int                `bson:"pools_played"`
 }
 
 func AddTeam() {
 	newTeam := Team{Name: "Team1"}
-	// Inserts sample documents into the collection
-	_, err := EventsCollection.InsertOne(context.TODO(), newTeam)
+	_, err := configs.GetCollection(configs.DB, "teams").InsertOne(context.TODO(), newTeam)
 	if err != nil {
 		panic(err)
 	}

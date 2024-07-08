@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 
+	"github.com/CrossoversForCures/Tournament-Scoring/configs"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -25,7 +26,7 @@ func AddEvents() {
 		Event{Name: "College Co-ed"},
 	}
 
-	_, err := EventsCollection.InsertMany(context.TODO(), newEvents)
+	_, err := configs.GetCollection(configs.DB, "events").InsertMany(context.TODO(), newEvents)
 	if err != nil {
 		panic(err)
 	}
