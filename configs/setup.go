@@ -10,7 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func ConnectDB() *mongo.Client {
+var EventsCollection *mongo.Collection
+var TeamsCollection *mongo.Collection
+var GamesCollection *mongo.Collection
+
+func ConnectDB() {
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
@@ -23,14 +27,7 @@ func ConnectDB() *mongo.Client {
 		panic(err)
 	}
 
-	return client
-}
-
-// Client instance
-var DB *mongo.Client = ConnectDB()
-
-// getting database collections
-func GetCollection(client *mongo.Client, collectionName string) *mongo.Collection {
-	collection := client.Database("tournament-scoring").Collection(collectionName)
-	return collection
+	EventsCollection = client.Database("tournament_scoring").Collection("events")
+	TeamsCollection = client.Database("tournament_scoring").Collection("teams")
+	GamesCollection = client.Database("tournament_scoring").Collection("games")
 }
