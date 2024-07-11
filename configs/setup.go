@@ -12,7 +12,7 @@ import (
 
 var EventsCollection *mongo.Collection
 var TeamsCollection *mongo.Collection
-var GamesCollection *mongo.Collection
+var PoolGamesCollection *mongo.Collection
 
 func ConnectDB() {
 	// Load .env file
@@ -29,5 +29,5 @@ func ConnectDB() {
 
 	EventsCollection = client.Database("tournament_scoring").Collection("events")
 	TeamsCollection = client.Database("tournament_scoring").Collection("teams")
-	GamesCollection = client.Database("tournament_scoring").Collection("games")
+	PoolGamesCollection = client.Database("tournament_scoring").Collection("games")
 }
