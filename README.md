@@ -25,9 +25,13 @@ As a spectator, I want to view the final scores of the pool play games, the stan
 2. As an administrator, I want to input the final scores of the single elimination bracket games, so I can commemorate the winning team.
 
 ## API Requirements
-GET `/api/tournaments` returns list of tournaments as JSON, split into active and inactive (archive)  
-GET `/api/teams` returns list of teams as JSON  
-POST `/api/teams` accepts a new team to be added  
+GET `/api/home` returns a list of all the events as well as information about the tournament  
+POST `/api/start` sorts all the teams in each event into pools  
+GET `/api/:id/teams` returns list of teams for the event as JSON  
+GET `/api/:id/pools` returns all pool information for the event as JSON  
+GET `/api/:id/seeding` returns all post-pool seedings for the event as JSON
+POST `/api/events/:id/
+POST `//teams` accepts a new team to be added  
 GET `/api/game/:id` returns information about a game as JSON  
 PUT `/api/game/:id` updates the results of a game  
 

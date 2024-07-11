@@ -1,80 +1,32 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
-	"os"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/CrossoversForCures/Tournament-Scoring/configs"
+	"github.com/CrossoversForCures/Tournament-Scoring/routes"
 
-	"github.com/CrossoversForCures/Tournament-Scoring/models"
-	"github.com/joho/godotenv"
+	"github.com/rs/cors"
 )
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "<h1>Hi</h1>")
-	filter := bson.D{{Key: "status", Value: "Active"}}
-	var result models.Tournament
-	err = coll.FindOne(context.TODO(), filter).Decode(&result)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-
-			return
-		}
-		panic(err)
-	}
-
-	output, err := json.MarshalIndent(result, "", "    ")
-	if err != nil {
-		panic(err)
-	}
-	w.Write(output)
-
-	fmt.Printf("%s\n", output)
-	//fmt.Fprintf(w, "<h1>Welcome to %v!</h1>", result.Name)
-}
-
-func teamsHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "<h1>Teams</h1>")
-}
-
-var coll *mongo.Collection
-var err error
-
 func main() {
-	// Load .env file
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
-	}
+	configs.ConnectDB()
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /api/home", routes.HomeHandler)
+	mux.HandleFunc("GET /api/{event_id}/teams", routes.TeamsHandler)
+	mux.HandleFunc("GET /api/{event_id}/pools", routes.PoolsHandler)
+	mux.HandleFunc("GET /api/{event_id}/seeding", routes.SeedingHandler)
 
-	// Making database connection
-	uri := os.Getenv("DATABASE_URL")
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
-	if err != nil {
-		panic(err)
-	}
+	mux.HandleFunc("POST /api/{event_id}/start-pools", routes.StartPoolsHandler)
+	mux.HandleFunc("POST /api/{event_id}/start-elimination", routes.StartEliminationHandler)
+	mux.HandleFunc("POST /api/{game_id}/score", routes.UpdatePoolsHandler)
 
-	defer func() {
-		if err := client.Disconnect(context.TODO()); err != nil {
-			panic(err)
-		}
-	}()
+	// mux.HandleFunc("GET /api/{eventId}/bracket", bracketHandler)
+	// mux.HanleFunc("GET /api/{eventId}/results", resultsHandler)
 
-	coll = client.Database("tournament_scoring").Collection("tournaments")
-
-	http.HandleFunc("/", homeHandler)
+	// mux.HandleFunc("POST /api/poolgame/{game_id}", routes.UpdatePoolsHandler)
+	handler := cors.Default().Handler(mux)
 	fmt.Println("Starting server on port 8000")
-	http.ListenAndServe(":8000", nil)
-	// 	newTournament := models.Tournament{Name: "E4E 2024", Date: time.Now(), Status: "Active"}
-
-	// 	result, err := coll.InsertOne(context.TODO(), newTournament)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	fmt.Printf("Document inserted with ID: %s\n", result.InsertedID)
+	http.ListenAndServe(":8000", handler)
 }
