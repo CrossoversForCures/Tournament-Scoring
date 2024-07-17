@@ -60,8 +60,10 @@ func AddEvents() {
 		Event{Name: "7th/8th Boys"},
 		Event{Name: "9th/10th Boys"},
 		Event{Name: "11th/12th Boys"},
+		Event{Name: "3rd/4th Girls"},
 		Event{Name: "5th/6th Girls"},
 		Event{Name: "7th/8th Girls"},
+		Event{Name: "9th/12th Girls"},
 		Event{Name: "College Co-ed"},
 	}
 
