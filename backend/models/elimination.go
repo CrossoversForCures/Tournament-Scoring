@@ -2,17 +2,15 @@ package models
 
 import (
 	"cmp"
-	"context"
 	"fmt"
 	"slices"
 
-	"github.com/CrossoversForCures/Tournament-Scoring/backend/configs"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func SeedTeams(eventId primitive.ObjectID) {
-	results := GetTeams(eventId)
+func SeedTeams(eventSlug string) {
+	results := GetTeams(eventSlug)
+
 	slices.SortFunc(results, func(a, b Team) int {
 		return cmp.Or(
 			cmp.Compare(b.PoolsWon, a.PoolsWon),
@@ -25,12 +23,8 @@ func SeedTeams(eventId primitive.ObjectID) {
 	}
 }
 
-func MakeBracket(eventId primitive.ObjectID) {
-	_, err := configs.ElimGamesCollection.DeleteMany(context.TODO(), bson.D{{Key: "eventId", Value: eventId}})
-	if err != nil {
-		panic(err)
-	}
-	teams := GetTeams(eventId)
+func MakeBracket(eventSlug string) {
+	teams := GetTeams(eventSlug)
 	slices.SortFunc(teams, func(a, b Team) int {
 		return cmp.Or(
 			cmp.Compare(a.Seeding, b.Seeding),
@@ -38,19 +32,20 @@ func MakeBracket(eventId primitive.ObjectID) {
 	})
 
 	roundsList := [6]int{2, 4, 8, 16, 32, 64}
-	var bracket int
+	var round int
 	for _, r := range roundsList {
 		if len(teams) <= r {
-			bracket = r
+			round = r
 			break
 		}
 	}
 
-	teams = append(teams, make([]Team, bracket-len(teams))...)
+	teams = append(teams, make([]Team, round-len(teams))...)
+
 	newBracket := *NewBracket(teams)
 	newBracket.ProcessByes()
 
-	UpdateEvent(eventId, bson.D{{Key: "$set", Value: bson.D{{Key: "elimBracket", Value: newBracket}}}})
+	UpdateEvent(eventSlug, bson.D{{Key: "$set", Value: bson.D{{Key: "elimBracket", Value: newBracket}}}})
 	newBracket.PrintTree(newBracket.Root, 0)
 }
 

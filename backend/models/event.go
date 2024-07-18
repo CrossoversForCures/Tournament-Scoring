@@ -19,19 +19,9 @@ type Event struct {
 	ElimBracket Bracket            `bson:"elimBracket,omitempty" json:"elimBracket,omitempty"`
 }
 
-func GetEvent(_id primitive.ObjectID) Event {
+func GetEvent(event string) Event {
 	var result Event
-	err := configs.EventsCollection.FindOne(context.TODO(), bson.D{{Key: "_id", Value: _id}}).Decode(&result)
-	if err != nil {
-		panic(err)
-	}
-
-	return result
-}
-
-func GetEventBySlug(slug string) Event {
-	var result Event
-	err := configs.EventsCollection.FindOne(context.TODO(), bson.D{{Key: "slug", Value: slug}}).Decode(&result)
+	err := configs.EventsCollection.FindOne(context.TODO(), bson.D{{Key: "slug", Value: event}}).Decode(&result)
 	if err != nil {
 		panic(err)
 	}
@@ -53,31 +43,30 @@ func GetEvents() []Event {
 	return results
 }
 
-func UpdateEvent(_id primitive.ObjectID, update bson.D) {
-	_, err := configs.EventsCollection.UpdateOne(context.TODO(), bson.D{{Key: "_id", Value: _id}}, update)
+func UpdateEvent(eventSlug string, update bson.D) {
+	_, err := configs.EventsCollection.UpdateOne(context.TODO(), bson.D{{Key: "slug", Value: eventSlug}}, update)
 	if err != nil {
 		panic(err)
 	}
 }
 
-// Test method
-func AddEvents() {
+func InitiateEvents() {
 	_, err := configs.EventsCollection.DeleteMany(context.TODO(), bson.D{})
 	if err != nil {
 		panic(err)
 	}
 
 	newEvents := []interface{}{
-		Event{Name: "3rd/4th Boys"},
-		Event{Name: "5th/6th Boys"},
-		Event{Name: "7th/8th Boys"},
-		Event{Name: "9th/10th Boys"},
-		Event{Name: "11th/12th Boys"},
-		Event{Name: "3rd/4th Girls"},
-		Event{Name: "5th/6th Girls"},
-		Event{Name: "7th/8th Girls"},
-		Event{Name: "9th/12th Girls"},
-		Event{Name: "College Co-ed"},
+		Event{Name: "3rd/4th Boys", Slug: "3rd-4th-boys"},
+		Event{Name: "5th/6th Boys", Slug: "5th-6th-boys"},
+		Event{Name: "7th/8th Boys", Slug: "7th-8th-boys"},
+		Event{Name: "9th/10th Boys", Slug: "9th-10th-boys"},
+		Event{Name: "11th/12th Boys", Slug: "11th-12th-boys"},
+		Event{Name: "3rd/4th Girls", Slug: "3rd-4th-girls"},
+		Event{Name: "5th/6th Girls", Slug: "5th-6th-girls"},
+		Event{Name: "7th/8th Girls", Slug: "7th-8th-girls"},
+		Event{Name: "9th/12th Girls", Slug: "9th-12th-girls"},
+		Event{Name: "College Co-ed", Slug: "college-coed"},
 	}
 
 	_, err = configs.EventsCollection.InsertMany(context.TODO(), newEvents)

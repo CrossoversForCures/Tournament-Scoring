@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/CrossoversForCures/Tournament-Scoring/backend/models"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -38,42 +37,26 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 func TeamsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	type response struct {
-		Teams []models.Team `json:"teams"`
-	}
+	eventSlug := r.PathValue("event_slug")
 
-	eventId, err := primitive.ObjectIDFromHex(r.PathValue("event_id"))
-	if err != nil {
-		panic(err)
-	}
-
-	results := models.GetTeams(eventId)
+	results := models.GetTeams(eventSlug)
 
 	if len(results) == 0 {
 		w.WriteHeader(http.StatusNotFound)
 		errorResponse := map[string]string{"error": "No teams found for event"}
 		json.NewEncoder(w).Encode(errorResponse)
 	} else {
-		newResponse := response{
-			Teams: results,
-		}
-		json.NewEncoder(w).Encode(newResponse)
+		json.NewEncoder(w).Encode(results)
 	}
 }
 
 func PoolsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	type response struct {
-		Games map[string][]models.PoolGame `json:"games"`
-	}
+	eventSlug := r.PathValue("event_slug")
 
-	eventId, err := primitive.ObjectIDFromHex(r.PathValue("event_id"))
-	if err != nil {
-		panic(err)
-	}
+	event := models.GetEvent(eventSlug)
 
-	event := models.GetEvent(eventId)
 	if event.Status < 1 {
 		w.WriteHeader(http.StatusNotFound)
 		errorResponse := map[string]string{"error": "Pool round hasn't started yet"}
@@ -81,7 +64,7 @@ func PoolsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results := models.GetPools(eventId)
+	results := models.GetPools(eventSlug)
 
 	if len(results) == 0 {
 		w.WriteHeader(http.StatusNotFound)
@@ -94,27 +77,17 @@ func PoolsHandler(w http.ResponseWriter, r *http.Request) {
 			games[key] = append(games[key], game)
 		}
 
-		newResponse := response{
-			Games: games,
-		}
-
-		json.NewEncoder(w).Encode(newResponse)
+		json.NewEncoder(w).Encode(games)
 	}
 }
 
 func SeedingHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	type response struct {
-		Seeding []models.Team `json:"seeding"`
-	}
+	eventSlug := r.PathValue("event_slug")
 
-	eventId, err := primitive.ObjectIDFromHex(r.PathValue("event_id"))
-	if err != nil {
-		panic(err)
-	}
+	event := models.GetEvent(eventSlug)
 
-	event := models.GetEvent(eventId)
 	if event.Status < 2 {
 		w.WriteHeader(http.StatusNotFound)
 		errorResponse := map[string]string{"error": "Elimination round hasn't started yet"}
@@ -122,7 +95,7 @@ func SeedingHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results := models.GetTeams(eventId)
+	results := models.GetTeams(eventSlug)
 
 	if len(results) == 0 {
 		w.WriteHeader(http.StatusNotFound)
@@ -136,21 +109,15 @@ func SeedingHandler(w http.ResponseWriter, r *http.Request) {
 		)
 	})
 
-	newResponse := response{
-		Seeding: results,
-	}
-	json.NewEncoder(w).Encode(newResponse)
+	json.NewEncoder(w).Encode(results)
 }
 
 func ElimHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	eventId, err := primitive.ObjectIDFromHex(r.PathValue("event_id"))
-	if err != nil {
-		panic(err)
-	}
+	eventSlug := r.PathValue("event_slug")
 
-	currentBracket := models.GetEvent(eventId).ElimBracket
+	currentBracket := models.GetEvent(eventSlug).ElimBracket
 	bracketJSON := currentBracket.ToDisplayNode(currentBracket.Root)
 	json.NewEncoder(w).Encode(bracketJSON)
 }

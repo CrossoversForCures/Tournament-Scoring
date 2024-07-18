@@ -11,13 +11,13 @@ import (
 type Team struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Name        string             `bson:"name,omitempty" json:"name,omitempty"`
-	Event       primitive.ObjectID `bson:"eventId,omitempty" json:"eventId,omitempty"`
-	Division    string             `bson:"division,omitempty" json:"division,omitempty"`
+	Event       string             `bson:"event,omitempty" json:"event,omitempty"`
 	NumPlayers  string             `bson:"numplayers,omitempty" json:"numplayers,omitempty"`
+	PoolsWon    int                `bson:"poolsWon,omitempty" json:"poolsWon,omitempty"`
+	TotalPoints int                `bson:"totalPoints,omitempty" json:"totalPoints,omitempty"`
+	Seeding     int                `bson:"seeding,omitempty" json:"seeding,omitempty"`
+
 	poolsPlayed int
-	PoolsWon    int `bson:"poolsWon,omitempty" json:"poolsWon,omitempty"`
-	TotalPoints int `bson:"totalPoints,omitempty" json:"totalPoints,omitempty"`
-	Seeding     int `bson:"seeding,omitempty" json:"seeding,omitempty"`
 }
 
 func GetTeam(_id primitive.ObjectID) Team {
@@ -30,8 +30,8 @@ func GetTeam(_id primitive.ObjectID) Team {
 	return result
 }
 
-func GetTeams(eventId primitive.ObjectID) []Team {
-	cursor, err := configs.TeamsCollection.Find(context.TODO(), bson.D{{Key: "eventId", Value: eventId}})
+func GetTeams(event string) []Team {
+	cursor, err := configs.TeamsCollection.Find(context.TODO(), bson.D{{Key: "event", Value: event}})
 	if err != nil {
 		panic(err)
 	}
@@ -62,22 +62,15 @@ func AddTeams() {
 		panic(err)
 	}
 
-	var result Event
-	err = configs.EventsCollection.FindOne(context.TODO(), bson.D{{Key: "name", Value: "3rd/4th Boys"}}).Decode(&result)
-	if err != nil {
-		panic(err)
-	}
-	eventId, _ := primitive.ObjectIDFromHex(result.ID.Hex())
-
 	newTeams := []interface{}{
-		Team{Name: "Team A", Event: eventId},
-		Team{Name: "Team B", Event: eventId},
-		Team{Name: "Team C", Event: eventId},
-		Team{Name: "Team D", Event: eventId},
-		Team{Name: "Team E", Event: eventId},
-		Team{Name: "Team F", Event: eventId},
-		Team{Name: "Team G", Event: eventId},
-		Team{Name: "Team H", Event: eventId},
+		Team{Name: "Team A", Event: "3rd-4th-boys"},
+		Team{Name: "Team B", Event: "3rd-4th-boys"},
+		Team{Name: "Team C", Event: "3rd-4th-boys"},
+		Team{Name: "Team D", Event: "3rd-4th-boys"},
+		Team{Name: "Team E", Event: "3rd-4th-boys"},
+		Team{Name: "Team F", Event: "3rd-4th-boys"},
+		Team{Name: "Team G", Event: "3rd-4th-boys"},
+		Team{Name: "Team H", Event: "3rd-4th-boys"},
 	}
 
 	_, err = configs.TeamsCollection.InsertMany(context.TODO(), newTeams)

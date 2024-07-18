@@ -11,7 +11,7 @@ import (
 
 type PoolGame struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	Event      primitive.ObjectID `bson:"eventId,omitempty" json:"eventId,omitempty"`
+	Event      string             `bson:"event,omitempty" json:"event,omitempty"`
 	Round      int                `bson:"round,omitempty" json:"round,omitempty"`
 	Court      string             `bson:"court,omitempty" json:"court,omitempty"`
 	Team1      primitive.ObjectID `bson:"team1Id,omitempty" json:"team1Id,omitempty"`
@@ -32,8 +32,8 @@ func GetPool(_id primitive.ObjectID) PoolGame {
 	return result
 }
 
-func GetPools(eventId primitive.ObjectID) []PoolGame {
-	cursor, err := configs.PoolGamesCollection.Find(context.TODO(), bson.D{{Key: "eventId", Value: eventId}})
+func GetPools(event string) []PoolGame {
+	cursor, err := configs.PoolGamesCollection.Find(context.TODO(), bson.D{{Key: "event", Value: event}})
 	if err != nil {
 		panic(err)
 	}
@@ -60,18 +60,12 @@ func InsertPool(newPool PoolGame) {
 	}
 }
 
-type matchup struct {
-	Team1 Team
-	Team2 Team
-	Round int
-}
-
-func SortPools(eventId primitive.ObjectID) {
-	_, err := configs.PoolGamesCollection.DeleteMany(context.TODO(), bson.D{{Key: "eventId", Value: eventId}})
+func SortPools(event string) {
+	_, err := configs.PoolGamesCollection.DeleteMany(context.TODO(), bson.D{{Key: "event", Value: event}})
 	if err != nil {
 		panic(err)
 	}
-	teams := GetTeams(eventId)
+	teams := GetTeams(event)
 
 	numTeams := len(teams)
 	round := 1
@@ -92,7 +86,6 @@ func SortPools(eventId primitive.ObjectID) {
 	// Keep doing rounds until all teams have played 2 games
 	for len(teams) != 0 {
 		teamsLeftThisRound := min(teamsPerRound, len(teams))
-		// fmt.Printf("Round: %v\n", round)
 
 		var currentGames []matchup
 
@@ -122,7 +115,6 @@ func SortPools(eventId primitive.ObjectID) {
 		for _, game := range currentGames {
 			game.Team1.poolsPlayed++
 			game.Team2.poolsPlayed++
-			// fmt.Printf("%v vs %v\n", game.Team1.Name, game.Team2.Name)
 
 			// If the team isn't finished with pools, add it back in
 			if game.Team1.poolsPlayed < 2 {
@@ -139,7 +131,7 @@ func SortPools(eventId primitive.ObjectID) {
 	for i, game := range gamesPlayed {
 		courts := [4]string{"A", "B", "C", "D"}
 		newGame := PoolGame{
-			Event:     eventId,
+			Event:     event,
 			Round:     game.Round,
 			Court:     courts[i%len(courts)],
 			Team1:     game.Team1.ID,
@@ -161,4 +153,10 @@ func duplicateGame(games []matchup, target []matchup) bool {
 	}
 
 	return false
+}
+
+type matchup struct {
+	Team1 Team
+	Team2 Team
+	Round int
 }

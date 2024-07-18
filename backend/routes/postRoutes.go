@@ -12,13 +12,10 @@ import (
 func StartPoolsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	eventId, err := primitive.ObjectIDFromHex(r.PathValue("event_id"))
-	if err != nil {
-		panic(err)
-	}
+	eventSlug := r.PathValue("event_slug")
 
-	models.SortPools(eventId)
-	models.UpdateEvent(eventId, bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: 1}}}})
+	models.SortPools(eventSlug)
+	models.UpdateEvent(eventSlug, bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: 1}}}})
 
 	response := map[string]string{"response": "Pools successfuly started"}
 	json.NewEncoder(w).Encode(response)
@@ -27,14 +24,11 @@ func StartPoolsHandler(w http.ResponseWriter, r *http.Request) {
 func StartEliminationHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	eventId, err := primitive.ObjectIDFromHex(r.PathValue("event_id"))
-	if err != nil {
-		panic(err)
-	}
+	eventSlug := r.PathValue("event_slug")
 
-	models.SeedTeams(eventId)
-	models.MakeBracket(eventId)
-	models.UpdateEvent(eventId, bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: 2}}}})
+	models.SeedTeams(eventSlug)
+	models.MakeBracket(eventSlug)
+	models.UpdateEvent(eventSlug, bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: 2}}}})
 
 	response := map[string]string{"response": "Elimination successfuly started"}
 	json.NewEncoder(w).Encode(response)
