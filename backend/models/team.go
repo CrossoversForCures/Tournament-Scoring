@@ -12,6 +12,8 @@ type Team struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Name        string             `bson:"name,omitempty" json:"name,omitempty"`
 	Event       primitive.ObjectID `bson:"eventId,omitempty" json:"eventId,omitempty"`
+	Division    string             `bson:"division,omitempty" json:"division,omitempty"`
+	NumPlayers  string             `bson:"numplayers,omitempty" json:"numplayers,omitempty"`
 	poolsPlayed int
 	PoolsWon    int `bson:"poolsWon,omitempty" json:"poolsWon,omitempty"`
 	TotalPoints int `bson:"totalPoints,omitempty" json:"totalPoints,omitempty"`

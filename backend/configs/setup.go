@@ -33,3 +33,14 @@ func ConnectDB() {
 	PoolGamesCollection = client.Database("tournament_scoring").Collection("pools")
 	ElimGamesCollection = client.Database("tournament_scoring").Collection("elims")
 }
+
+func GetStripeKey() string {
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
+	key := os.Getenv("STRIPE_SECRET_KEY")
+	if key == "" {
+		log.Fatal("STRIPE_API_KEY is not set in the environment")
+	}
+	return key
+}

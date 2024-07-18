@@ -5,6 +5,7 @@ go 1.22.4
 require (
 	github.com/joho/godotenv v1.5.1
 	github.com/rs/cors v1.11.0
+	github.com/stripe/stripe-go/v79 v79.3.0
 	go.mongodb.org/mongo-driver v1.16.0
 )
 
