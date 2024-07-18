@@ -4,8 +4,8 @@
 This is the backend API designed to facilitate the organization and tracking of Elevate 4 Epilepsy basketball tournaments. It provides both GET routes and POST routes to view and manage each tournament division. 
 
 
-## API Documentation
-# GET `/api/home` returns a list of all the events as well as information about the tournament.
+## Usage
+### GET `/api/home` returns a list of all the events as well as information about the tournament.
 Example Request: `GET http://localhost:8000/api/home`
 
 Example Response:
@@ -30,7 +30,7 @@ Example Response:
 }
 ```
 
-# GET `/api/{event_slug}/teams` returns list of teams for the event.
+### GET `/api/{event_slug}/teams` returns list of teams for the event.
 Example Request: `GET http://localhost:8000/api/3rd-4th-boys/teams`
 
 Example Response: 
@@ -52,7 +52,7 @@ Example Response:
 }
 ```
 
-# GET `/api/{event_slug}/pools` returns a map of pool rounds and games for the event. If pools haven't started, it will return an error.
+### GET `/api/{event_slug}/pools` returns a map of pool rounds and games for the event. If pools haven't started, it will return an error.
 Example Request: `GET http://localhost:8000/api/3rd-4th-boys/pools`
 
 Example Response: 
@@ -87,7 +87,7 @@ Example Response:
 }
 ```
 
-# GET `/api/{event_slug}/seeding` returns an ordered list of all the seeded teams for an event. If pools haven't finished, it will return an error.
+### GET `/api/{event_slug}/seeding` returns an ordered list of all the seeded teams for an event. If pools haven't finished, it will return an error.
 Example Request: `GET http://localhost:8000/api/3rd-4th-boys/seeding`
 
 Example Response: 
@@ -131,13 +131,6 @@ GET `/api/game/:id` returns information about a game as JSON
 PUT `/api/game/:id` updates the results of a game  
 
 The backend will also create a new tournament in the database after the current one finishes and generate the pool and elimination bracket based on standings.
-
-
-## Usage
-[Instructions on how to use the application, including any command-line interfaces, APIs, etc.]
-
-## Technologies Used
-[List of technologies, frameworks, and libraries used in the project]
 
 ## Contributing
 Brian Zhou, Dustin He
