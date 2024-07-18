@@ -13,16 +13,16 @@ func main() {
 	configs.ConnectDB()
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/home", routes.HomeHandler)
-	mux.HandleFunc("GET /api/{event_id}/teams", routes.TeamsHandler)
-	mux.HandleFunc("GET /api/{event_id}/pools", routes.PoolsHandler)
-	mux.HandleFunc("GET /api/{event_id}/seeding", routes.SeedingHandler)
-	mux.HandleFunc("GET /api/{eventId}/bracket", routes.ElimHandler)
+	mux.HandleFunc("GET /api/{event_name}/teams", routes.TeamsHandler)
+	mux.HandleFunc("GET /api/{event_name}/pools", routes.PoolsHandler)
+	mux.HandleFunc("GET /api/{event_name}/seeding", routes.SeedingHandler)
+	mux.HandleFunc("GET /api/{event_name}/bracket", routes.ElimHandler)
 
-	mux.HandleFunc("POST /api/{event_id}/start-pools", routes.StartPoolsHandler)
-	mux.HandleFunc("POST /api/{event_id}/start-elimination", routes.StartEliminationHandler)
+	mux.HandleFunc("POST /api/{event_name}/start-pools", routes.StartPoolsHandler)
+	mux.HandleFunc("POST /api/{event_name}/start-elimination", routes.StartEliminationHandler)
 
-	mux.HandleFunc("POST /api/{game_id}/score", routes.UpdatePoolsHandler)
-	mux.HandleFunc("POST /api/{team_id}/winner", routes.UpdateElimHandler)
+	mux.HandleFunc("POST /api/{event_name}/update-pool", routes.UpdatePoolsHandler)
+	mux.HandleFunc("POST /api/{event_name}/update-elim", routes.UpdateElimHandler)
 
 	// mux.HanleFunc("GET /api/{eventId}/results", resultsHandler)
 
