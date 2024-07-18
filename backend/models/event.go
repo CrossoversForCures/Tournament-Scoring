@@ -10,13 +10,12 @@ import (
 )
 
 type Event struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	Name        string             `bson:"name,omitempty" json:"name,omitempty"`
-	Slug        string             `bson:"slug,omitempty" json:"slug,omitempty"`
-	Time        time.Time          `bson:"time,omitempty" json:"time,omitempty"`
-	Status      int                `bson:"status,omitempty" json:"status,omitempty"` //0: In registration | 1: Playing pools | 2: Playing bracket | 3: Completed
-	PoolRounds  int                `bson:"poolRounds,omitempty" json:"poolRounds,omitempty"`
-	ElimBracket Bracket            `bson:"elimBracket,omitempty" json:"elimBracket,omitempty"`
+	ID         primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	Name       string             `bson:"name,omitempty" json:"name,omitempty"`
+	Slug       string             `bson:"slug,omitempty" json:"slug,omitempty"`
+	Time       time.Time          `bson:"time,omitempty" json:"time,omitempty"`
+	Status     int                `bson:"status,omitempty" json:"status,omitempty"` //0: In registration | 1: Playing pools | 2: Playing bracket | 3: Completed
+	PoolRounds int                `bson:"poolRounds,omitempty" json:"poolRounds,omitempty"`
 }
 
 func GetEvent(event string) Event {

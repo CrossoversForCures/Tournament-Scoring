@@ -26,7 +26,7 @@
 			{#each data.games[round] as game}
 				<TableBodyRow color="custom">
 					<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
-						><div class="text-black">Court X</div></TableBodyCell
+						><div class="text-black">Court {game.court}</div></TableBodyCell
 					>
 					<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
 						><div class="text-black">{game.team1Name}</div></TableBodyCell

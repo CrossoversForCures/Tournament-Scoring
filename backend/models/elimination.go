@@ -2,11 +2,83 @@ package models
 
 import (
 	"cmp"
+	"context"
 	"fmt"
+	"math"
 	"slices"
 
+	"github.com/CrossoversForCures/Tournament-Scoring/backend/configs"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+type BracketNode struct {
+	Team   *Team
+	Left   *BracketNode
+	Right  *BracketNode
+	Parent *BracketNode
+}
+
+type Bracket struct {
+	Root *BracketNode
+}
+
+type StorableBracketNode struct {
+	Team    string               `bson:"team,omitempty" json:"team,omitempty"`
+	TeamID  primitive.ObjectID   `bson:"teamId,omitempty" json:"teamId,omitempty"`
+	Seeding int                  `bson:"seeding,omitempty" json:"seeding,omitempty"`
+	Left    *StorableBracketNode `bson:"left,omitempty" json:"left,omitempty"`
+	Right   *StorableBracketNode `bson:"right,omitempty" json:"right,omitempty"`
+}
+
+type StorableBracket struct {
+	Event string               `bson:"event,omitempty" json:"event,omitempty"`
+	Root  *StorableBracketNode `bson:"root,omitempty" json:"root,omitempty"`
+}
+
+func GetBracket(eventSlug string) StorableBracket {
+	var result StorableBracket
+	err := configs.BracketsCollection.FindOne(context.TODO(), bson.D{{Key: "event", Value: eventSlug}}).Decode(&result)
+	if err != nil {
+		panic(err)
+	}
+
+	return result
+}
+
+func InsertBracket(newBracket StorableBracket) {
+	_, err := configs.BracketsCollection.InsertOne(context.TODO(), newBracket)
+	if err != nil {
+		panic(err)
+	}
+}
+
+// Convert Bracket to StorableBracket
+func (b *Bracket) ToStorable(eventSlug string) *StorableBracket {
+	return &StorableBracket{
+		Root:  convertToStorableNode(b.Root),
+		Event: eventSlug,
+	}
+}
+
+func convertToStorableNode(node *BracketNode) *StorableBracketNode {
+	if node == nil {
+		return nil
+	}
+
+	storableNode := &StorableBracketNode{
+		Left:  convertToStorableNode(node.Left),
+		Right: convertToStorableNode(node.Right),
+	}
+
+	if node.Team != nil {
+		storableNode.TeamID = node.Team.ID
+		storableNode.Team = node.Team.Name
+		storableNode.Seeding = node.Team.Seeding
+	}
+
+	return storableNode
+}
 
 func SeedTeams(eventSlug string) {
 	results := GetTeams(eventSlug)
@@ -25,151 +97,102 @@ func SeedTeams(eventSlug string) {
 
 func MakeBracket(eventSlug string) {
 	teams := GetTeams(eventSlug)
-	slices.SortFunc(teams, func(a, b Team) int {
-		return cmp.Or(
-			cmp.Compare(a.Seeding, b.Seeding),
-		)
-	})
+	matchups := getBracket(teams)
 
-	roundsList := [6]int{2, 4, 8, 16, 32, 64}
-	var round int
-	for _, r := range roundsList {
-		if len(teams) <= r {
-			round = r
-			break
+	bracket := createBracketTree(matchups)
+	// printBracketTree(bracket.Root, 0)
+	StorableBracket := *bracket.ToStorable(eventSlug)
+	InsertBracket(StorableBracket)
+}
+
+func getBracket(teams []Team) [][]*Team {
+	participantsCount := len(teams)
+	rounds := int(math.Ceil(math.Log2(float64(participantsCount))))
+	// bracketSize := int(math.Pow(2, float64(rounds)))
+	// requiredByes := bracketSize - participantsCount
+
+	// fmt.Printf("Number of participants: %d\n", participantsCount)
+	// fmt.Printf("Number of rounds: %d\n", rounds)
+	// fmt.Printf("Bracket size: %d\n", bracketSize)
+	// fmt.Printf("Required number of byes: %d\n", requiredByes)
+
+	if participantsCount < 2 {
+		return [][]*Team{}
+	}
+
+	matches := [][]*Team{{&teams[0], &teams[1]}}
+
+	for round := 1; round < rounds; round++ {
+		roundMatches := [][]*Team{}
+		sum := int(math.Pow(2, float64(round+1))) + 1
+
+		for i := 0; i < len(matches); i++ {
+			home := changeIntoBye(matches[i][0].Seeding, participantsCount, teams)
+			away := changeIntoBye(sum-matches[i][0].Seeding, participantsCount, teams)
+			roundMatches = append(roundMatches, []*Team{home, away})
+
+			home = changeIntoBye(sum-matches[i][1].Seeding, participantsCount, teams)
+			away = changeIntoBye(matches[i][1].Seeding, participantsCount, teams)
+			roundMatches = append(roundMatches, []*Team{home, away})
 		}
+		matches = roundMatches
 	}
 
-	teams = append(teams, make([]Team, round-len(teams))...)
-
-	newBracket := *NewBracket(teams)
-	newBracket.ProcessByes()
-
-	UpdateEvent(eventSlug, bson.D{{Key: "$set", Value: bson.D{{Key: "elimBracket", Value: newBracket}}}})
-	newBracket.PrintTree(newBracket.Root, 0)
+	return matches
 }
 
-type BracketNode struct {
-	Team   *Team
-	Left   *BracketNode
-	Right  *BracketNode
-	Parent *BracketNode
+func changeIntoBye(seed, participantsCount int, teams []Team) *Team {
+	if seed <= participantsCount {
+		return &teams[seed-1]
+	}
+	return nil
 }
 
-type Bracket struct {
-	Root *BracketNode
-}
-
-func NewBracket(teams []Team) *Bracket {
-	if len(teams) == 0 {
-		return &Bracket{}
+func createBracketTree(matchups [][]*Team) Bracket {
+	if len(matchups) == 0 {
+		return Bracket{Root: nil}
 	}
 
-	leaves := make([]*BracketNode, len(teams))
-	for i := range teams {
-		leaves[i] = &BracketNode{Team: &teams[i]}
+	// Create leaf nodes
+	leaves := make([]*BracketNode, 0, len(matchups)*2)
+	for _, matchup := range matchups {
+		leaves = append(leaves, &BracketNode{Team: matchup[0]})
+		leaves = append(leaves, &BracketNode{Team: matchup[1]})
 	}
 
 	// Build the tree bottom-up
 	for len(leaves) > 1 {
-		var parents []*BracketNode
+		parents := make([]*BracketNode, 0, len(leaves)/2)
 		for i := 0; i < len(leaves); i += 2 {
-			parent := &BracketNode{}
-			parent.Left = leaves[i]
-			leaves[i].Parent = parent
-			if i+1 < len(leaves) {
-				parent.Right = leaves[i+1]
-				leaves[i+1].Parent = parent
+			parent := &BracketNode{
+				Left:  leaves[i],
+				Right: leaves[i+1],
 			}
+			leaves[i].Parent = parent
+			leaves[i+1].Parent = parent
 			parents = append(parents, parent)
 		}
 		leaves = parents
 	}
 
-	return &Bracket{Root: leaves[0]}
+	return Bracket{Root: leaves[0]}
 }
 
-func (bt *Bracket) SetWinner(team Team) {
-	node := bt.findNode(bt.Root, team)
-	if node == nil || node.Parent == nil {
-		return
-	}
-
-	parent := node.Parent
-	parent.Team = node.Team
-}
-
-// ProcessByes goes through the tree and moves up teams paired with "BYE"
-func (bt *Bracket) ProcessByes() {
-	bt.processByesRecursive(bt.Root)
-}
-
-// Recursive helper function to process byes
-func (bt *Bracket) processByesRecursive(node *BracketNode) {
+func PrintBracketTree(node *BracketNode, depth int) {
 	if node == nil {
 		return
 	}
 
-	// If this is a parent of leaf nodes
-	if (node.Left != nil && node.Left.Team != nil) && (node.Right != nil && node.Right.Team != nil) {
-		if node.Left.Team.Name == "BYE" {
-			bt.SetWinner(*node.Right.Team)
-		} else if node.Right.Team.Name == "BYE" {
-			bt.SetWinner(*node.Left.Team)
-		}
-		return // No need to process further down this branch
-	}
+	PrintBracketTree(node.Right, depth+1)
 
-	// Continue searching in left and right subtrees
-	bt.processByesRecursive(node.Left)
-	bt.processByesRecursive(node.Right)
-}
-
-// Helper function to find a node with a specific team
-func (bt *Bracket) findNode(node *BracketNode, team Team) *BracketNode {
-	if node == nil {
-		return nil
+	for i := 0; i < depth; i++ {
+		fmt.Print("    ")
 	}
-	if node.Team != nil && node.Team.ID == team.ID {
-		return node
-	}
-	left := bt.findNode(node.Left, team)
-	if left != nil {
-		return left
-	}
-	return bt.findNode(node.Right, team)
-}
-
-// PrintTree is a helper function to print the tree (for debugging)
-func (bt *Bracket) PrintTree(node *BracketNode, level int) {
-	if node == nil {
-		return
-	}
-	for i := 0; i < level; i++ {
-		fmt.Print("  ")
-	}
-	if node.Team != nil {
-		fmt.Printf("Team: %s\n", node.Team.Name)
+	if node.Team == nil {
+		fmt.Println("[-]")
 	} else {
-		fmt.Println("Empty")
+		fmt.Printf("[%s (Seed %d)]\n", node.Team.Name, node.Team.Seeding)
 	}
-	bt.PrintTree(node.Left, level+1)
-	bt.PrintTree(node.Right, level+1)
-}
 
-type DisplayNode struct {
-	Team  *Team        `json:"team,omitempty"`
-	Left  *DisplayNode `json:"left,omitempty"`
-	Right *DisplayNode `json:"right,omitempty"`
-}
-
-func (bt *Bracket) ToDisplayNode(node *BracketNode) *DisplayNode {
-	if node == nil {
-		return nil
-	}
-	return &DisplayNode{
-		Team:  node.Team,
-		Left:  bt.ToDisplayNode(node.Left),
-		Right: bt.ToDisplayNode(node.Right),
-	}
+	PrintBracketTree(node.Left, depth+1)
 }

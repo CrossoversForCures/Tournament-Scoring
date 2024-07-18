@@ -12,7 +12,6 @@ type Team struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Name        string             `bson:"name,omitempty" json:"name,omitempty"`
 	Event       string             `bson:"event,omitempty" json:"event,omitempty"`
-	NumPlayers  string             `bson:"numplayers,omitempty" json:"numplayers,omitempty"`
 	PoolsWon    int                `bson:"poolsWon,omitempty" json:"poolsWon,omitempty"`
 	TotalPoints int                `bson:"totalPoints,omitempty" json:"totalPoints,omitempty"`
 	Seeding     int                `bson:"seeding,omitempty" json:"seeding,omitempty"`
@@ -71,6 +70,8 @@ func AddTeams() {
 		Team{Name: "Team F", Event: "3rd-4th-boys"},
 		Team{Name: "Team G", Event: "3rd-4th-boys"},
 		Team{Name: "Team H", Event: "3rd-4th-boys"},
+		Team{Name: "Team I", Event: "3rd-4th-boys"},
+		Team{Name: "Team J", Event: "3rd-4th-boys"},
 	}
 
 	_, err = configs.TeamsCollection.InsertMany(context.TODO(), newTeams)

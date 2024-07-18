@@ -13,7 +13,7 @@ import (
 var EventsCollection *mongo.Collection
 var TeamsCollection *mongo.Collection
 var PoolGamesCollection *mongo.Collection
-var ElimGamesCollection *mongo.Collection
+var BracketsCollection *mongo.Collection
 
 func ConnectDB() {
 	// Load .env file
@@ -31,7 +31,7 @@ func ConnectDB() {
 	EventsCollection = client.Database("tournament_scoring").Collection("events")
 	TeamsCollection = client.Database("tournament_scoring").Collection("teams")
 	PoolGamesCollection = client.Database("tournament_scoring").Collection("pools")
-	ElimGamesCollection = client.Database("tournament_scoring").Collection("elims")
+	BracketsCollection = client.Database("tournament_scoring").Collection("brackets")
 }
 
 func GetStripeKey() string {

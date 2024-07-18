@@ -30,7 +30,7 @@ Example Response:
 }
 ```
 
-### GET `/api/{event_slug}/teams` returns list of teams for the event.
+### GET `/api/{event_slug}/teams` returns a list of teams for the event.
 Example Request: `GET http://localhost:8000/api/3rd-4th-boys/teams`
 
 Example Response: 

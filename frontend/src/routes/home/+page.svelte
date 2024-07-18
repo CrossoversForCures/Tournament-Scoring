@@ -25,7 +25,7 @@
 		</TableHead>
 		<TableBody tableBodyClass="divide-y">
 			{#each data.events as event}
-				<TableBodyRow on:click={() => goto(`/${event._id}/teams`)}>
+				<TableBodyRow on:click={() => goto(`/${event.slug}/teams`)}>
 					<TableBodyCell>{event.name}</TableBodyCell>
 				</TableBodyRow>
 			{/each}
