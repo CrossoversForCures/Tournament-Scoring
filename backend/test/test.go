@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/CrossoversForCures/Tournament-Scoring/configs"
-	"github.com/CrossoversForCures/Tournament-Scoring/stripeFunctions"
+	"github.com/CrossoversForCures/Tournament-Scoring/backend/configs"
+	"github.com/CrossoversForCures/Tournament-Scoring/backend/stripeFunctions"
 	"github.com/stripe/stripe-go/v79"
 )
 

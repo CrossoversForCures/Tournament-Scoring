@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/CrossoversForCures/Tournament-Scoring/models"
+	"github.com/CrossoversForCures/Tournament-Scoring/backend/models"
 	"github.com/stripe/stripe-go/v79"
 	"github.com/stripe/stripe-go/v79/checkout/session"
 )
