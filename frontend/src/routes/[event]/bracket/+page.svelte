@@ -1,3 +1,4 @@
+<!-- src/routes/+page.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
 
@@ -7,86 +8,61 @@
 		seeding?: number;
 	}
 
-	interface Node extends Team {
-		left?: Node;
-		right?: Node;
+	interface BracketNode extends Team {
+		left?: BracketNode;
+		right?: BracketNode;
 	}
 
 	interface BracketData {
 		event: string;
-		root: Node;
+		root: BracketNode;
 	}
+	import type { PageData } from './$types';
+	import { root } from 'postcss';
+	export let data: PageData;
 
-	let bracketData: BracketData | null = null;
-	let debug: string = '';
-
-	onMount(async () => {
-		try {
-			const response = await fetch('http://localhost:8000/api/3rd-4th-boys/bracket');
-			bracketData = await response.json();
-			debug = JSON.stringify(bracketData, null, 2);
-		} catch (error) {
-			console.error('Error fetching bracket data:', error);
-			debug = 'Error fetching data: ' + error;
-		}
-	});
-
-	function renderNode(node: Node | undefined, depth: number): string {
+	function renderBracket(
+		node: BracketNode | undefined,
+		depth: number = 0,
+		isSecondTeam: boolean = false
+	): string {
 		if (!node) return '';
 
-		const hasTeam = node.team !== undefined;
-		const teamDisplay = hasTeam ? `${node.team} (${node.seeding})` : 'TBD';
-		const isBye = !hasTeam && !node.left && !node.right;
-
+		const team = node.team || 'TBD';
+		const seed = node.seeding ? `(${node.seeding})` : '';
+		const isBye = team.toUpperCase() === 'BYE';
 		let html = `
-			<div class="flex flex-col items-start ${getDepthClass(depth)}">
-				<div class="border border-gray-300 p-2 m-1 min-w-[150px] ${isBye ? 'opacity-50' : ''}">
-					${teamDisplay}
-					<br>
-					<small class="text-gray-500">ID: ${node.teamId}</small>
-				</div>
-				${node.left ? renderNode(node.left, depth + 1) : ''}
-				${node.right ? renderNode(node.right, depth + 1) : ''}
-			</div>
-		`;
+      <div class="w-64 p-2 border border-black" >
+        <span class="font-bold ${isBye ? 'text-black opacity-50' : 'text-blue-600'}">${seed} ${team}</span>
+      </div>
+  `;
+
+		if (node.left || node.right) {
+			const spacingClass = isSecondTeam ? (depth === 0 ? 'mt-16' : 'mt-8') : '';
+			html = `
+        <div class="flex ${spacingClass}">
+          <div>
+            ${renderBracket(node.left, depth + 1, false)}
+            ${renderBracket(node.right, depth + 1, true)}
+          </div>
+          <div class="flex flex-col relative w-24">
+            <div class="absolute left-[-1px] top-1/4 bottom-1/4 w-px bg-black"></div>
+        	<div class="absolute left-0 right-0 top-1/2 h-px bg-black"></div>
+			<div class="absolute top-1/2 ml-3 mt-1 text-xs">Court A</div>
+          </div>
+          <div class="flex items-center">
+            ${html}
+          </div>
+        </div>
+      `;
+		}
 
 		return html;
 	}
-
-	function getDepthClass(depth: number): string {
-		switch (depth) {
-			case 0:
-				return 'mt-0';
-			case 1:
-				return 'mt-12';
-			case 2:
-				return 'mt-24';
-			case 3:
-				return 'mt-48';
-			case 4:
-				return 'mt-96';
-			default:
-				return 'mt-0';
-		}
-	}
-
-	function countNodes(node: Node | undefined): number {
-		if (!node) return 0;
-		return 1 + countNodes(node.left) + countNodes(node.right);
-	}
 </script>
 
-<main class="p-4">
-	<h1 class="mb-4 text-2xl font-bold">{bracketData ? bracketData.event : 'Loading...'}</h1>
-	{#if bracketData}
-		<div class="flex flex-row-reverse items-center justify-start overflow-x-auto p-4">
-			{@html renderNode(bracketData.root, 0)}
-		</div>
-		<p class="mt-4">Total nodes: {countNodes(bracketData.root)}</p>
-	{:else}
-		<p>Loading bracket data...</p>
-	{/if}
-	<pre class="mt-4 overflow-x-auto bg-gray-100 p-4">
-			{debug}
-		</pre>
-</main>
+<div class="overflow-x-auto p-8">
+	<div class="inline-block">
+		{@html renderBracket(data.root)}
+	</div>
+</div>

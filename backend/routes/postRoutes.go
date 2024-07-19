@@ -79,13 +79,29 @@ func UpdatePoolsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateElimHandler(w http.ResponseWriter, r *http.Request) {
-	// w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 
-	// teamId, err := primitive.ObjectIDFromHex(r.PathValue("team_id"))
-	// if err != nil {
-	// 	panic(err)
-	// }
+	type request struct {
+		TeamID primitive.ObjectID `bson:"teamId" json:"teamId"`
+	}
 
+	var newRequest request
+	err := json.NewDecoder(r.Body).Decode(&newRequest)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusBadRequest)
+		return
+	}
+
+	teamId, err := primitive.ObjectIDFromHex(newRequest.TeamID.Hex())
+	if err != nil {
+		panic(err)
+	}
+
+	team := models.GetTeam(teamId)
+	bracket := models.GetBracket(team.Event)
+
+	models.SetWinner(bracket.Root, team.ID)
+	models.UpdateBracket(team.Event, bson.D{{Key: "$set", Value: bson.D{{Key: "root", Value: bracket.Root}}}})
 	// // models.ElimBracket.SetWinner(models.GetTeam(teamId))
-	// // models.ElimBracket.PrintTree(models.ElimBracket.Root, 0)
+	models.PrintBracketTree(bracket.Root, 0)
 }

@@ -118,6 +118,6 @@ func ElimHandler(w http.ResponseWriter, r *http.Request) {
 	eventSlug := r.PathValue("event_slug")
 
 	bracket := models.GetBracket(eventSlug)
-
+	models.PrintBracketTree(bracket.Root, 0)
 	json.NewEncoder(w).Encode(bracket)
 }

@@ -23,7 +23,7 @@ func main() {
 	mux.HandleFunc("POST /api/{event_slug}/start-elimination", routes.StartEliminationHandler)
 
 	mux.HandleFunc("POST /api/{event_slug}/update-pool", routes.UpdatePoolsHandler)
-	mux.HandleFunc("POST /api/{event_slug}/update-elim", routes.UpdateElimHandler)
+	mux.HandleFunc("POST /api/update-elim", routes.UpdateElimHandler)
 
 	handler := cors.Default().Handler(mux)
 	fmt.Println("Starting server on port 8000")

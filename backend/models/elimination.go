@@ -13,31 +13,20 @@ import (
 )
 
 type BracketNode struct {
-	Team   *Team
-	Left   *BracketNode
-	Right  *BracketNode
-	Parent *BracketNode
+	Team    string             `bson:"team,omitempty" json:"team,omitempty"`
+	TeamID  primitive.ObjectID `bson:"teamId,omitempty" json:"teamId,omitempty"`
+	Seeding int                `bson:"seeding,omitempty" json:"seeding,omitempty"`
+	Left    *BracketNode       `bson:"left,omitempty" json:"left,omitempty"`
+	Right   *BracketNode       `bson:"right,omitempty" json:"right,omitempty"`
 }
 
 type Bracket struct {
-	Root *BracketNode
+	Event string       `bson:"event,omitempty" json:"event,omitempty"`
+	Root  *BracketNode `bson:"root,omitempty" json:"root,omitempty"`
 }
 
-type StorableBracketNode struct {
-	Team    string               `bson:"team,omitempty" json:"team,omitempty"`
-	TeamID  primitive.ObjectID   `bson:"teamId,omitempty" json:"teamId,omitempty"`
-	Seeding int                  `bson:"seeding,omitempty" json:"seeding,omitempty"`
-	Left    *StorableBracketNode `bson:"left,omitempty" json:"left,omitempty"`
-	Right   *StorableBracketNode `bson:"right,omitempty" json:"right,omitempty"`
-}
-
-type StorableBracket struct {
-	Event string               `bson:"event,omitempty" json:"event,omitempty"`
-	Root  *StorableBracketNode `bson:"root,omitempty" json:"root,omitempty"`
-}
-
-func GetBracket(eventSlug string) StorableBracket {
-	var result StorableBracket
+func GetBracket(eventSlug string) Bracket {
+	var result Bracket
 	err := configs.BracketsCollection.FindOne(context.TODO(), bson.D{{Key: "event", Value: eventSlug}}).Decode(&result)
 	if err != nil {
 		panic(err)
@@ -46,38 +35,18 @@ func GetBracket(eventSlug string) StorableBracket {
 	return result
 }
 
-func InsertBracket(newBracket StorableBracket) {
+func InsertBracket(newBracket Bracket) {
 	_, err := configs.BracketsCollection.InsertOne(context.TODO(), newBracket)
 	if err != nil {
 		panic(err)
 	}
 }
 
-// Convert Bracket to StorableBracket
-func (b *Bracket) ToStorable(eventSlug string) *StorableBracket {
-	return &StorableBracket{
-		Root:  convertToStorableNode(b.Root),
-		Event: eventSlug,
+func UpdateBracket(eventSlug string, update bson.D) {
+	_, err := configs.BracketsCollection.UpdateOne(context.TODO(), bson.D{{Key: "event", Value: eventSlug}}, update)
+	if err != nil {
+		panic(err)
 	}
-}
-
-func convertToStorableNode(node *BracketNode) *StorableBracketNode {
-	if node == nil {
-		return nil
-	}
-
-	storableNode := &StorableBracketNode{
-		Left:  convertToStorableNode(node.Left),
-		Right: convertToStorableNode(node.Right),
-	}
-
-	if node.Team != nil {
-		storableNode.TeamID = node.Team.ID
-		storableNode.Team = node.Team.Name
-		storableNode.Seeding = node.Team.Seeding
-	}
-
-	return storableNode
 }
 
 func SeedTeams(eventSlug string) {
@@ -96,13 +65,17 @@ func SeedTeams(eventSlug string) {
 }
 
 func MakeBracket(eventSlug string) {
+	_, err := configs.BracketsCollection.DeleteOne(context.TODO(), bson.D{{Key: "event", Value: eventSlug}})
+	if err != nil {
+		panic(err)
+	}
 	teams := GetTeams(eventSlug)
 	matchups := getBracket(teams)
 
-	bracket := createBracketTree(matchups)
-	// printBracketTree(bracket.Root, 0)
-	StorableBracket := *bracket.ToStorable(eventSlug)
-	InsertBracket(StorableBracket)
+	bracket := buildBracketTree(matchups, eventSlug)
+	resolveByes(bracket.Root)
+	PrintBracketTree(bracket.Root, 0)
+	InsertBracket(*bracket)
 }
 
 func getBracket(teams []Team) [][]*Team {
@@ -148,34 +121,105 @@ func changeIntoBye(seed, participantsCount int, teams []Team) *Team {
 	return nil
 }
 
-func createBracketTree(matchups [][]*Team) Bracket {
+func buildBracketTree(matchups [][]*Team, eventSlug string) *Bracket {
 	if len(matchups) == 0 {
-		return Bracket{Root: nil}
+		return nil
 	}
 
+	nodes := make([]*BracketNode, 0, len(matchups)*2)
+
 	// Create leaf nodes
-	leaves := make([]*BracketNode, 0, len(matchups)*2)
 	for _, matchup := range matchups {
-		leaves = append(leaves, &BracketNode{Team: matchup[0]})
-		leaves = append(leaves, &BracketNode{Team: matchup[1]})
+		for _, team := range matchup {
+			if team == nil {
+				nodes = append(nodes, &BracketNode{
+					Team: "BYE",
+				}) // Represent a bye
+			} else {
+				nodes = append(nodes, &BracketNode{
+					Team:    team.Name,
+					TeamID:  team.ID,
+					Seeding: team.Seeding,
+				})
+			}
+		}
 	}
 
 	// Build the tree bottom-up
-	for len(leaves) > 1 {
-		parents := make([]*BracketNode, 0, len(leaves)/2)
-		for i := 0; i < len(leaves); i += 2 {
-			parent := &BracketNode{
-				Left:  leaves[i],
-				Right: leaves[i+1],
+	for len(nodes) > 1 {
+		var parents []*BracketNode
+		for i := 0; i < len(nodes); i += 2 {
+			parent := &BracketNode{}
+			if i+1 < len(nodes) {
+				parent.Left = nodes[i]
+				parent.Right = nodes[i+1]
+			} else {
+				parent.Left = nodes[i]
 			}
-			leaves[i].Parent = parent
-			leaves[i+1].Parent = parent
 			parents = append(parents, parent)
 		}
-		leaves = parents
+		nodes = parents
 	}
 
-	return Bracket{Root: leaves[0]}
+	newBracket := Bracket{
+		Event: eventSlug,
+		Root:  nodes[0],
+	}
+	return &newBracket
+}
+
+func resolveByes(root *BracketNode) {
+	if root == nil {
+		return
+	}
+
+	// Check if this node is a matchup (has children)
+	if root.Left != nil || root.Right != nil {
+		if root.Left.Team != "BYE" && root.Right.Team == "BYE" {
+			bypassBye(root, root.Left)
+		} else if root.Right.Team != "BYE" && root.Left.Team == "BYE" {
+			bypassBye(root, root.Right)
+		} else {
+			resolveByes(root.Left)
+			resolveByes(root.Right)
+		}
+	}
+}
+
+func bypassBye(parent *BracketNode, winner *BracketNode) {
+	parent.Team = winner.Team
+	parent.TeamID = winner.TeamID
+	parent.Seeding = winner.Seeding
+}
+
+func SetWinner(root *BracketNode, teamID primitive.ObjectID) bool {
+	if root == nil {
+		return false
+	}
+
+	// Check if either child is the team we're looking for
+	if root.Left != nil && root.Left.TeamID == teamID {
+		root.Team = root.Left.Team
+		root.TeamID = root.Left.TeamID
+		root.Seeding = root.Left.Seeding
+		return true
+	}
+	if root.Right != nil && root.Right.TeamID == teamID {
+		root.Team = root.Right.Team
+		root.TeamID = root.Right.TeamID
+		root.Seeding = root.Right.Seeding
+		return true
+	}
+
+	// If not found in immediate children, recursively search left and right subtrees
+	if SetWinner(root.Left, teamID) {
+		return true
+	}
+	if SetWinner(root.Right, teamID) {
+		return true
+	}
+
+	return false
 }
 
 func PrintBracketTree(node *BracketNode, depth int) {
@@ -188,10 +232,10 @@ func PrintBracketTree(node *BracketNode, depth int) {
 	for i := 0; i < depth; i++ {
 		fmt.Print("    ")
 	}
-	if node.Team == nil {
+	if node.Team == "" {
 		fmt.Println("[-]")
 	} else {
-		fmt.Printf("[%s (Seed %d)]\n", node.Team.Name, node.Team.Seeding)
+		fmt.Printf("[%s (Seed %d)]\n", node.Team, node.Seeding)
 	}
 
 	PrintBracketTree(node.Left, depth+1)
