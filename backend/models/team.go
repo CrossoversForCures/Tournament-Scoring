@@ -15,6 +15,7 @@ type Team struct {
 	PoolsWon    int                `bson:"poolsWon,omitempty" json:"poolsWon,omitempty"`
 	TotalPoints int                `bson:"totalPoints,omitempty" json:"totalPoints,omitempty"`
 	Seeding     int                `bson:"seeding,omitempty" json:"seeding,omitempty"`
+	Rank        int                `bson:"rank,omitempty" json:"rank,omitempty"`
 
 	poolsPlayed int
 }
