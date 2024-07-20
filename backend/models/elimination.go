@@ -23,9 +23,9 @@ type BracketNode struct {
 
 type Bracket struct {
 	Event  string       `bson:"event,omitempty" json:"event,omitempty"`
-	Root   *BracketNode `bson:"root,omitempty" json:"root,omitempty"`
-	Courts []string     `bson:"courts,omitempty" json:"courts,"`
 	Rounds int          `bson:"rounds,omitempty" json:"rounds,omitempty"`
+	Courts []string     `bson:"courts,omitempty" json:"courts,"`
+	Root   *BracketNode `bson:"root,omitempty" json:"root,omitempty"`
 }
 
 func GetBracket(eventSlug string) Bracket {
