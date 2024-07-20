@@ -130,8 +130,8 @@ Example Response:
 ```
 {
   "event": "3rd-4th-boys",
-  "courts": ["A", "B"],
   "rounds": 4,
+  "courts": ["A", "B"],
   "root": {
     "teamId": "000000000000000000000000",
     "left": {
