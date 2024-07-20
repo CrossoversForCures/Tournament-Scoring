@@ -99,9 +99,12 @@ func UpdateElimHandler(w http.ResponseWriter, r *http.Request) {
 
 	team := models.GetTeam(teamId)
 	bracket := models.GetBracket(team.Event)
-
-	models.SetWinner(bracket.Root, team.ID)
-	models.UpdateBracket(team.Event, bson.D{{Key: "$set", Value: bson.D{{Key: "root", Value: bracket.Root}}}})
-	// // models.ElimBracket.SetWinner(models.GetTeam(teamId))
-	models.PrintBracketTree(bracket.Root, 0)
+	if models.SetWinner(bracket.Root, team.ID, &bracket.Courts) {
+		models.UpdateBracket(team.Event, bson.D{{Key: "$set", Value: bson.D{{Key: "root", Value: bracket.Root}, {Key: "courts", Value: bracket.Courts}}}})
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		errorResponse := map[string]string{"error": "No valid matchup"}
+		json.NewEncoder(w).Encode(errorResponse)
+		return
+	}
 }

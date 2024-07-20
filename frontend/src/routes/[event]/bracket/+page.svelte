@@ -11,6 +11,7 @@
 	interface BracketNode extends Team {
 		left?: BracketNode;
 		right?: BracketNode;
+		court?: string;
 	}
 
 	interface BracketData {
@@ -18,7 +19,6 @@
 		root: BracketNode;
 	}
 	import type { PageData } from './$types';
-	import { root } from 'postcss';
 	export let data: PageData;
 
 	function renderBracket(
@@ -32,13 +32,13 @@
 		const seed = node.seeding ? `(${node.seeding})` : '';
 		const isBye = team.toUpperCase() === 'BYE';
 		let html = `
-      <div class="w-64 p-2 border border-black" >
+      <div class="w-64 p-2 border border-black ${isSecondTeam ? (depth == data.rounds ? 'border-t-0' : '') : ''}" >
         <span class="font-bold ${isBye ? 'text-black opacity-50' : 'text-blue-600'}">${seed} ${team}</span>
       </div>
   `;
 
 		if (node.left || node.right) {
-			const spacingClass = isSecondTeam ? (depth === 0 ? 'mt-16' : 'mt-8') : '';
+			const spacingClass = isSecondTeam ? 'mt-16' : '';
 			html = `
         <div class="flex ${spacingClass}">
           <div>
@@ -48,7 +48,7 @@
           <div class="flex flex-col relative w-24">
             <div class="absolute left-[-1px] top-1/4 bottom-1/4 w-px bg-black"></div>
         	<div class="absolute left-0 right-0 top-1/2 h-px bg-black"></div>
-			<div class="absolute top-1/2 ml-3 mt-1 text-xs">Court A</div>
+			<div class="absolute top-1/2 ml-3 mt-1 text-xs font-bold text-red-500">${node.court === 'N/A' ? '' : node.court === undefined ? 'Court TBD' : `Court ${node.court}`}</div>
           </div>
           <div class="flex items-center">
             ${html}

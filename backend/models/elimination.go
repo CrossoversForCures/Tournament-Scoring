@@ -18,11 +18,14 @@ type BracketNode struct {
 	Seeding int                `bson:"seeding,omitempty" json:"seeding,omitempty"`
 	Left    *BracketNode       `bson:"left,omitempty" json:"left,omitempty"`
 	Right   *BracketNode       `bson:"right,omitempty" json:"right,omitempty"`
+	Court   string             `bson:"court,omitempty" json:"court,omitempty"`
 }
 
 type Bracket struct {
-	Event string       `bson:"event,omitempty" json:"event,omitempty"`
-	Root  *BracketNode `bson:"root,omitempty" json:"root,omitempty"`
+	Event  string       `bson:"event,omitempty" json:"event,omitempty"`
+	Root   *BracketNode `bson:"root,omitempty" json:"root,omitempty"`
+	Courts []string     `bson:"courts,omitempty" json:"courts,"`
+	Rounds int          `bson:"rounds,omitempty" json:"rounds,omitempty"`
 }
 
 func GetBracket(eventSlug string) Bracket {
@@ -70,15 +73,15 @@ func MakeBracket(eventSlug string) {
 		panic(err)
 	}
 	teams := GetTeams(eventSlug)
-	matchups := getBracket(teams)
+	matchups := getMatchups(teams)
 
-	bracket := buildBracketTree(matchups, eventSlug)
+	bracket := buildTree(eventSlug, matchups)
 	resolveByes(bracket.Root)
-	PrintBracketTree(bracket.Root, 0)
+	assignCourts(bracket)
 	InsertBracket(*bracket)
 }
 
-func getBracket(teams []Team) [][]*Team {
+func getMatchups(teams []Team) [][]*Team {
 	participantsCount := len(teams)
 	rounds := int(math.Ceil(math.Log2(float64(participantsCount))))
 	// bracketSize := int(math.Pow(2, float64(rounds)))
@@ -114,6 +117,7 @@ func getBracket(teams []Team) [][]*Team {
 	return matches
 }
 
+// Helper
 func changeIntoBye(seed, participantsCount int, teams []Team) *Team {
 	if seed <= participantsCount {
 		return &teams[seed-1]
@@ -121,7 +125,7 @@ func changeIntoBye(seed, participantsCount int, teams []Team) *Team {
 	return nil
 }
 
-func buildBracketTree(matchups [][]*Team, eventSlug string) *Bracket {
+func buildTree(eventSlug string, matchups [][]*Team) *Bracket {
 	if len(matchups) == 0 {
 		return nil
 	}
@@ -162,8 +166,9 @@ func buildBracketTree(matchups [][]*Team, eventSlug string) *Bracket {
 	}
 
 	newBracket := Bracket{
-		Event: eventSlug,
-		Root:  nodes[0],
+		Event:  eventSlug,
+		Root:   nodes[0],
+		Rounds: int(math.Log2(float64(len(matchups) * 2))),
 	}
 	return &newBracket
 }
@@ -186,42 +191,118 @@ func resolveByes(root *BracketNode) {
 	}
 }
 
+// Helper
 func bypassBye(parent *BracketNode, winner *BracketNode) {
 	parent.Team = winner.Team
 	parent.TeamID = winner.TeamID
 	parent.Seeding = winner.Seeding
 }
 
-func SetWinner(root *BracketNode, teamID primitive.ObjectID) bool {
+func assignCourts(bracket *Bracket) {
+	courts := []string{"A", "B", "C", "D"}
+	assignCourtsAtLayer(bracket.Root, bracket.Rounds, 1, &courts)
+	assignCourtsAtLayer(bracket.Root, bracket.Rounds-1, 1, &courts)
+	bracket.Courts = courts
+}
+
+// Helper
+func assignCourtsAtLayer(node *BracketNode, targetDepth int, currentDepth int, courts *[]string) {
+	if node == nil {
+		return
+	}
+
+	if currentDepth == targetDepth {
+		if node.Left != nil && node.Right != nil &&
+			node.Left.Team != "" && node.Right.Team != "" &&
+			node.Left.Team != "BYE" && node.Right.Team != "BYE" {
+			if len(*courts) > 0 {
+				node.Court = (*courts)[0]
+				*courts = (*courts)[1:]
+			}
+		} else if (node.Left != nil && node.Left.Team == "BYE") ||
+			(node.Right != nil && node.Right.Team == "BYE") {
+			node.Court = "N/A"
+		}
+		return
+	}
+
+	assignCourtsAtLayer(node.Left, targetDepth, currentDepth+1, courts)
+	assignCourtsAtLayer(node.Right, targetDepth, currentDepth+1, courts)
+}
+
+func SetWinner(root *BracketNode, teamID primitive.ObjectID, courts *[]string) bool {
+	if setWinnerRecursive(root, teamID, courts) {
+		if assignNext(root, (*courts)[0]) {
+			*courts = (*courts)[1:]
+		}
+		return true
+	}
+	return false
+}
+
+// Helper
+func setWinnerRecursive(root *BracketNode, teamID primitive.ObjectID, courts *[]string) bool {
 	if root == nil {
 		return false
 	}
 
 	// Check if either child is the team we're looking for
-	if root.Left != nil && root.Left.TeamID == teamID {
+	if root.Right != nil && root.Left.TeamID == teamID {
+		if root.Right.Team == "" {
+			return false
+		}
 		root.Team = root.Left.Team
 		root.TeamID = root.Left.TeamID
 		root.Seeding = root.Left.Seeding
+		*courts = append(*courts, root.Court)
 		return true
 	}
-	if root.Right != nil && root.Right.TeamID == teamID {
+	if root.Left != nil && root.Right.TeamID == teamID {
+		if root.Left.Team == "" {
+			return false
+		}
 		root.Team = root.Right.Team
 		root.TeamID = root.Right.TeamID
 		root.Seeding = root.Right.Seeding
+		*courts = append(*courts, root.Court)
 		return true
 	}
 
 	// If not found in immediate children, recursively search left and right subtrees
-	if SetWinner(root.Left, teamID) {
+	if setWinnerRecursive(root.Left, teamID, courts) {
 		return true
 	}
-	if SetWinner(root.Right, teamID) {
+	if setWinnerRecursive(root.Right, teamID, courts) {
 		return true
 	}
 
 	return false
 }
 
+func assignNext(node *BracketNode, court string) bool {
+	if node == nil {
+		return false
+	}
+
+	// Check if this node is a valid, unassigned matchup
+	if node.Left != nil && node.Right != nil &&
+		node.Left.Team != "" && node.Right.Team != "" &&
+		node.Left.Team != "BYE" && node.Right.Team != "BYE" &&
+		node.Court == "" {
+		node.Court = court
+		return true
+	}
+
+	// Recursively check left subtree
+	if assignNext(node.Left, court) {
+		return true
+	}
+
+	// Recursively check right subtree
+	return assignNext(node.Right, court)
+}
+
+// Helper function for debugging
 func PrintBracketTree(node *BracketNode, depth int) {
 	if node == nil {
 		return
