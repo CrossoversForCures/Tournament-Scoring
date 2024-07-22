@@ -38,21 +38,24 @@ func UpdatePoolsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	type request struct {
-		Team1Score int `bson:"team1_score" json:"team1Score"`
-		Team2Score int `bson:"team2_score" json:"team2Score"`
-	}
-
-	gameId, err := primitive.ObjectIDFromHex(r.PathValue("game_id"))
-	if err != nil {
-		panic(err)
+		GameID     primitive.ObjectID `bson:"gameId" json:"gameId"`
+		Team1Score json.Number        `bson:"team1Score" json:"team1Score"`
+		Team2Score json.Number        `bson:"team2Score" json:"team2Score"`
 	}
 
 	var newRequest request
-	err = json.NewDecoder(r.Body).Decode(&newRequest)
+	err := json.NewDecoder(r.Body).Decode(&newRequest)
 	if err != nil {
 		http.Error(w, "Error reading request body", http.StatusBadRequest)
 		return
 	}
+
+	gameId, err := primitive.ObjectIDFromHex(newRequest.GameID.Hex())
+	if err != nil {
+		panic(err)
+	}
+	team1Score, _ := newRequest.Team1Score.Int64()
+	team2Score, _ := newRequest.Team2Score.Int64()
 
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "team1Score", Value: newRequest.Team1Score}, {Key: "team2Score", Value: newRequest.Team2Score}}}}
 	models.UpdatePool(gameId, update)
@@ -60,8 +63,8 @@ func UpdatePoolsHandler(w http.ResponseWriter, r *http.Request) {
 	poolGame := models.GetPool(gameId)
 	team1 := models.GetTeam(poolGame.Team1)
 	team2 := models.GetTeam(poolGame.Team2)
-	team1Update := bson.D{{Key: "$set", Value: bson.D{{Key: "totalPoints", Value: team1.TotalPoints + newRequest.Team1Score}}}}
-	team2Update := bson.D{{Key: "$set", Value: bson.D{{Key: "totalPoints", Value: team2.TotalPoints + newRequest.Team2Score}}}}
+	team1Update := bson.D{{Key: "$set", Value: bson.D{{Key: "totalPoints", Value: team1.TotalPoints + int(team1Score)}}}}
+	team2Update := bson.D{{Key: "$set", Value: bson.D{{Key: "totalPoints", Value: team2.TotalPoints + int(team2Score)}}}}
 
 	models.UpdateTeam(team1.ID, team1Update)
 	models.UpdateTeam(team2.ID, team2Update)

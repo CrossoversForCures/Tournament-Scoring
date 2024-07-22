@@ -68,10 +68,6 @@ func SeedTeams(eventSlug string) {
 }
 
 func MakeBracket(eventSlug string) {
-	_, err := configs.BracketsCollection.DeleteOne(context.TODO(), bson.D{{Key: "event", Value: eventSlug}})
-	if err != nil {
-		panic(err)
-	}
 	teams := GetTeams(eventSlug)
 	matchups := getMatchups(teams)
 
@@ -84,45 +80,45 @@ func MakeBracket(eventSlug string) {
 func getMatchups(teams []Team) [][]*Team {
 	participantsCount := len(teams)
 	rounds := int(math.Ceil(math.Log2(float64(participantsCount))))
-	// bracketSize := int(math.Pow(2, float64(rounds)))
-	// requiredByes := bracketSize - participantsCount
-
-	// fmt.Printf("Number of participants: %d\n", participantsCount)
-	// fmt.Printf("Number of rounds: %d\n", rounds)
-	// fmt.Printf("Bracket size: %d\n", bracketSize)
-	// fmt.Printf("Required number of byes: %d\n", requiredByes)
 
 	if participantsCount < 2 {
 		return [][]*Team{}
 	}
 
-	matches := [][]*Team{{&teams[0], &teams[1]}}
+	matches := [][]Team{{teams[0], teams[1]}}
 
 	for round := 1; round < rounds; round++ {
-		roundMatches := [][]*Team{}
+		roundMatches := [][]Team{}
 		sum := int(math.Pow(2, float64(round+1))) + 1
 
 		for i := 0; i < len(matches); i++ {
 			home := changeIntoBye(matches[i][0].Seeding, participantsCount, teams)
 			away := changeIntoBye(sum-matches[i][0].Seeding, participantsCount, teams)
-			roundMatches = append(roundMatches, []*Team{home, away})
+			roundMatches = append(roundMatches, []Team{home, away})
 
 			home = changeIntoBye(sum-matches[i][1].Seeding, participantsCount, teams)
 			away = changeIntoBye(matches[i][1].Seeding, participantsCount, teams)
-			roundMatches = append(roundMatches, []*Team{home, away})
+			roundMatches = append(roundMatches, []Team{home, away})
 		}
 		matches = roundMatches
 	}
 
-	return matches
+	result := make([][]*Team, len(matches))
+	for i, match := range matches {
+		result[i] = make([]*Team, len(match))
+		for j := range match {
+			result[i][j] = &match[j]
+		}
+	}
+	return result
 }
 
 // Helper
-func changeIntoBye(seed, participantsCount int, teams []Team) *Team {
-	if seed <= participantsCount {
-		return &teams[seed-1]
+func changeIntoBye(seed, participantsCount int, teams []Team) Team {
+	if seed <= 0 || seed > participantsCount {
+		return Team{} // Return an empty Team for byes or invalid seeds
 	}
-	return nil
+	return teams[seed-1]
 }
 
 func buildTree(eventSlug string, matchups [][]*Team) *Bracket {

@@ -14,6 +14,7 @@ type PoolGame struct {
 	Event      string             `bson:"event,omitempty" json:"event,omitempty"`
 	Round      int                `bson:"round,omitempty" json:"round,omitempty"`
 	Court      string             `bson:"court,omitempty" json:"court,omitempty"`
+	Status     int                `bson:"status,omitempty" json:"status,omitempty"`
 	Team1      primitive.ObjectID `bson:"team1Id,omitempty" json:"team1Id,omitempty"`
 	Team2      primitive.ObjectID `bson:"team2Id,omitempty" json:"team2Id,omitempty"`
 	Team1Name  string             `bson:"team1Name,omitempty" json:"team1Name,omitempty"`

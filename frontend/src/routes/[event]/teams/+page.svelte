@@ -12,8 +12,8 @@
 	export let data: PageData;
 </script>
 
-<Table hoverable={true} divClass="ml-2 mr-2" color="blue">
-	<TableHead>
+<Table hoverable={true} divClass="ml-2 mr-2 font-default">
+	<TableHead class="bg-theme text-white">
 		<TableHeadCell>Name</TableHeadCell>
 	</TableHead>
 	<TableBody tableBodyClass="divide-y">

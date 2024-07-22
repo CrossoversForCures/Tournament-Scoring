@@ -1,7 +1,5 @@
 <!-- src/routes/+page.svelte -->
 <script lang="ts">
-	import { onMount } from 'svelte';
-
 	interface Team {
 		team?: string;
 		teamId: string;

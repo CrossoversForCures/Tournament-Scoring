@@ -22,7 +22,7 @@ func main() {
 	mux.HandleFunc("POST /api/{event_slug}/start-pools", routes.StartPoolsHandler)
 	mux.HandleFunc("POST /api/{event_slug}/start-elimination", routes.StartEliminationHandler)
 
-	mux.HandleFunc("POST /api/{event_slug}/update-pool", routes.UpdatePoolsHandler)
+	mux.HandleFunc("POST /api/update-pool", routes.UpdatePoolsHandler)
 	mux.HandleFunc("POST /api/update-elim", routes.UpdateElimHandler)
 
 	handler := cors.Default().Handler(mux)
