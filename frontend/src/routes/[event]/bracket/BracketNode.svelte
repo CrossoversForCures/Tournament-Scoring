@@ -8,7 +8,6 @@
 	export let isSecondTeam: boolean = false;
 
 	function submitForm(teamId: string | undefined) {
-		console.log('submitting');
 		const form = document.querySelector('form');
 		if (form instanceof HTMLFormElement) {
 			const input = form.querySelector('input[name="teamId"]');
