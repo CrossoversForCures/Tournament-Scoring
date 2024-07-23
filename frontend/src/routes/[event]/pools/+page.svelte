@@ -66,24 +66,24 @@
 				{#each data.games[round] as game}
 					<TableBodyRow color="default">
 						<TableBodyCell class="py-2">
-							<div class="text-black">Court {game.court}</div></TableBodyCell
+							Court {game.court}</TableBodyCell
 						>
-						<TableBodyCell class="py-2"
-							><div class="text-black">{game.team1Name}</div></TableBodyCell
+						<TableBodyCell class="py-2">{game.team1Name}</TableBodyCell>
+						<TableBodyCell
+							class="py-2 font-semibold {game.team1Score > game.team2Score
+								? 'text-green-500'
+								: 'text-red-500'}"
 						>
-						<TableBodyCell class="py-2">
-							<div class={game.team1Score > game.team2Score ? 'text-green' : 'text-red'}>
-								{game.team1Score === undefined ? '' : game.team1Score}
-							</div>
+							{game.team1Score === undefined ? '' : game.team1Score}
 						</TableBodyCell>
-						<TableBodyCell class="py-2"
-							><div class="text-black">{game.team2Name}</div></TableBodyCell
+						<TableBodyCell class="py-2">{game.team2Name}</TableBodyCell>
+						<TableBodyCell
+							class="py-2 font-semibold {game.team2Score > game.team1Score
+								? 'text-green-500'
+								: 'text-red-500'}"
 						>
-						<TableBodyCell class="py-2"
-							><div class={game.team2Score > game.team1Score ? 'text-green' : 'text-red'}>
-								{game.team2Score === undefined ? '' : game.team2Score}
-							</div></TableBodyCell
-						>
+							{game.team2Score === undefined ? '' : game.team2Score}
+						</TableBodyCell>
 						{#if $isAdmin}
 							<TableBodyCell class="py-0">
 								<button
