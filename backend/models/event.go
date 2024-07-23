@@ -55,9 +55,9 @@ func InitiateEvents() {
 	}
 
 	newEvents := []interface{}{
-		Event{Name: "5th/6th Boys", Slug: "5th-6th-boys", Time: "3:00PM"},
-		Event{Name: "7th/8th Boys", Slug: "7th-8th-boys", Time: "11:30AM"},
 		Event{Name: "5th/6th Girls", Slug: "5th-6th-girls", Time: "9:00AM"},
+		Event{Name: "7th/8th Boys", Slug: "7th-8th-boys", Time: "11:30AM"},
+		Event{Name: "5th/6th Boys", Slug: "5th-6th-boys", Time: "3:00PM"},
 	}
 
 	_, err = configs.EventsCollection.InsertMany(context.TODO(), newEvents)
