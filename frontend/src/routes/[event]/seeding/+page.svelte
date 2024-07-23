@@ -42,9 +42,21 @@
 				<TableBodyRow color="custom">
 					<TableBodyCell class="py-2"><div class="text-black">{team.seeding}</div></TableBodyCell>
 					<TableBodyCell class="py-2"><div class="text-black">{team.name}</div></TableBodyCell>
-					<TableBodyCell class="py-2"><div class="text-black">{team.poolsWon}</div></TableBodyCell>
 					<TableBodyCell class="py-2"
-						><div class="text-black">{team.totalPoints}</div></TableBodyCell
+						><div class="text-black">
+							{#if team.poolsWon === undefined}
+								0
+							{:else}
+								{team.poolsWon}{/if}
+						</div></TableBodyCell
+					>
+					<TableBodyCell class="py-2"
+						><div class="text-black">
+							{#if team.totalPoints === undefined}
+								0
+							{:else}
+								{team.totalPoints}{/if}
+						</div></TableBodyCell
 					>
 				</TableBodyRow>
 			{/each}

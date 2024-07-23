@@ -46,7 +46,7 @@
 		{#each data.events as event}
 			<TableBodyRow color="default" on:click={() => goto(`/${event.slug}/teams`)}>
 				<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
-					><div class="text-black">8:00 AM</div></TableBodyCell
+					><div class="text-black">{event.time}</div></TableBodyCell
 				>
 				<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
 					><div class="text-black">{event.name}</div></TableBodyCell

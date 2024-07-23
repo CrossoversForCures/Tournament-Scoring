@@ -72,7 +72,7 @@
 							><div class="text-black">{game.team1Name}</div></TableBodyCell
 						>
 						<TableBodyCell class="py-2">
-							<div class="text-black">
+							<div class={game.team1Score > game.team2Score ? 'text-green' : 'text-red'}>
 								{game.team1Score === undefined ? '' : game.team1Score}
 							</div>
 						</TableBodyCell>
@@ -80,7 +80,7 @@
 							><div class="text-black">{game.team2Name}</div></TableBodyCell
 						>
 						<TableBodyCell class="py-2"
-							><div class="text-black">
+							><div class={game.team2Score > game.team1Score ? 'text-green' : 'text-red'}>
 								{game.team2Score === undefined ? '' : game.team2Score}
 							</div></TableBodyCell
 						>
