@@ -2,10 +2,15 @@ package models
 
 import (
 	"context"
+	"fmt"
+	"log"
 
 	"github.com/CrossoversForCures/Tournament-Scoring/backend/configs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/stripe/stripe-go/v79"
+	"github.com/stripe/stripe-go/v79/checkout/session"
 )
 
 type Team struct {
@@ -80,4 +85,62 @@ func AddTeams() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func GetAllTeams() ([]Team, error) {
+	// Initialize params for listing checkout sessions
+	params := &stripe.CheckoutSessionListParams{}
+
+	// Create a slice to store all sessions
+	var teamRegistrations []Team
+
+	// Use an iterator to paginate through all checkout sessions
+	i := session.List(params)
+	for i.Next() {
+		s := i.CheckoutSession()
+		if s.CustomFields != nil && len(s.CustomFields) > 2 {
+			team, err := processCheckoutSessionTest(s)
+			if err != nil {
+				continue
+			}
+			if team.Event != "" {
+				teamRegistrations = append(teamRegistrations, team)
+			}
+		}
+
+	}
+	// Handle any error encountered during the iteration
+	if err := i.Err(); err != nil {
+		log.Fatalf("Error listing sessions: %v", err)
+	}
+
+	fmt.Printf("Total sessions retrieved: %d\n", len(teamRegistrations))
+	return teamRegistrations, nil
+}
+
+func processCheckoutSessionTest(s *stripe.CheckoutSession) (Team, error) {
+	team := Team{}
+
+	for _, field := range s.CustomFields {
+		switch field.Key {
+		case "teamname":
+			if field.Text != nil {
+				team.Name = field.Text.Value
+			}
+		case "division":
+			if field.Dropdown != nil {
+				event := field.Dropdown.Value
+				if event == "5th6thgirls" {
+					team.Event = "5th-6th-girls"
+				}
+				if event == "5th6thboys" {
+					team.Event = "5th-6th-boys"
+				}
+				if event == "7th8thboys" {
+					team.Event = "7th-8th-boys"
+				}
+			}
+		}
+	}
+	return team, nil
 }

@@ -7,10 +7,13 @@ import (
 	"github.com/CrossoversForCures/Tournament-Scoring/backend/configs"
 	"github.com/CrossoversForCures/Tournament-Scoring/backend/routes"
 	"github.com/rs/cors"
+
+	"github.com/stripe/stripe-go/v79"
 )
 
 func main() {
 	configs.ConnectDB()
+	stripe.Key = configs.GetStripeKey()
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/home", routes.HomeHandler)
 	mux.HandleFunc("GET /api/{event_slug}/teams", routes.TeamsHandler)
