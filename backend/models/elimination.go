@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"slices"
+	"sort"
 
 	"github.com/CrossoversForCures/Tournament-Scoring/backend/configs"
 	"go.mongodb.org/mongo-driver/bson"
@@ -68,60 +69,67 @@ func SeedTeams(eventSlug string) {
 }
 
 func MakeBracket(eventSlug string) {
+	_, err := configs.BracketsCollection.DeleteMany(context.TODO(), bson.D{{Key: "event", Value: eventSlug}})
+	if err != nil {
+		panic(err)
+	}
 	teams := GetTeams(eventSlug)
+	slices.SortFunc(teams, func(a, b Team) int {
+		return cmp.Or(
+			cmp.Compare(a.Seeding, b.Seeding),
+		)
+	})
 	matchups := getMatchups(teams)
-
 	bracket := buildTree(eventSlug, matchups)
 	resolveByes(bracket.Root)
 	assignCourts(bracket)
 	InsertBracket(*bracket)
 }
 
-func getMatchups(teams []Team) [][]*Team {
-	participantsCount := len(teams)
-	rounds := int(math.Ceil(math.Log2(float64(participantsCount))))
-
-	if participantsCount < 2 {
-		return [][]*Team{}
-	}
+func getMatchups(teams []Team) [][]Team {
+	numTeams := len(teams)
+	rounds := int(math.Ceil(math.Log2(float64(numTeams))))
 
 	matches := [][]Team{{teams[0], teams[1]}}
 
 	for round := 1; round < rounds; round++ {
-		roundMatches := [][]Team{}
+		var roundMatches [][]Team
 		sum := int(math.Pow(2, float64(round+1))) + 1
 
 		for i := 0; i < len(matches); i++ {
-			home := changeIntoBye(matches[i][0].Seeding, participantsCount, teams)
-			away := changeIntoBye(sum-matches[i][0].Seeding, participantsCount, teams)
-			roundMatches = append(roundMatches, []Team{home, away})
+			var home Team
+			var away Team
 
-			home = changeIntoBye(sum-matches[i][1].Seeding, participantsCount, teams)
-			away = changeIntoBye(matches[i][1].Seeding, participantsCount, teams)
+			if matches[i][0].Seeding <= numTeams {
+				home = matches[i][0]
+			} else {
+				home = Team{}
+			}
+			if sum-matches[i][0].Seeding <= numTeams {
+				away = teams[sum-matches[i][0].Seeding-1]
+			} else {
+				away = Team{}
+			}
+			roundMatches = append(roundMatches, []Team{home, away})
+			if sum-matches[i][1].Seeding <= numTeams {
+				home = teams[sum-matches[i][1].Seeding-1]
+			} else {
+				home = Team{}
+			}
+			if matches[i][1].Seeding <= numTeams {
+				away = matches[i][1]
+			} else {
+				away = Team{}
+			}
 			roundMatches = append(roundMatches, []Team{home, away})
 		}
 		matches = roundMatches
 	}
 
-	result := make([][]*Team, len(matches))
-	for i, match := range matches {
-		result[i] = make([]*Team, len(match))
-		for j := range match {
-			result[i][j] = &match[j]
-		}
-	}
-	return result
+	return matches
 }
 
-// Helper
-func changeIntoBye(seed, participantsCount int, teams []Team) Team {
-	if seed <= 0 || seed > participantsCount {
-		return Team{} // Return an empty Team for byes or invalid seeds
-	}
-	return teams[seed-1]
-}
-
-func buildTree(eventSlug string, matchups [][]*Team) *Bracket {
+func buildTree(eventSlug string, matchups [][]Team) *Bracket {
 	if len(matchups) == 0 {
 		return nil
 	}
@@ -131,7 +139,7 @@ func buildTree(eventSlug string, matchups [][]*Team) *Bracket {
 	// Create leaf nodes
 	for _, matchup := range matchups {
 		for _, team := range matchup {
-			if team == nil {
+			if team.Name == "" {
 				nodes = append(nodes, &BracketNode{
 					Team: "BYE",
 				}) // Represent a bye
@@ -251,6 +259,7 @@ func setWinnerRecursive(root *BracketNode, teamID primitive.ObjectID, courts *[]
 		root.TeamID = root.Left.TeamID
 		root.Seeding = root.Left.Seeding
 		*courts = append(*courts, root.Court)
+		root.Court = "-" + root.Court
 		return true
 	}
 	if root.Left != nil && root.Right.TeamID == teamID {
@@ -261,6 +270,7 @@ func setWinnerRecursive(root *BracketNode, teamID primitive.ObjectID, courts *[]
 		root.TeamID = root.Right.TeamID
 		root.Seeding = root.Right.Seeding
 		*courts = append(*courts, root.Court)
+		root.Court = "-" + root.Court
 		return true
 	}
 
@@ -275,6 +285,7 @@ func setWinnerRecursive(root *BracketNode, teamID primitive.ObjectID, courts *[]
 	return false
 }
 
+// Helper
 func assignNext(node *BracketNode, court string) bool {
 	if node == nil {
 		return false
@@ -296,6 +307,94 @@ func assignNext(node *BracketNode, court string) bool {
 
 	// Recursively check right subtree
 	return assignNext(node.Right, court)
+}
+
+func RankTeams(eventSlug string) {
+	bracket := GetBracket(eventSlug)
+	teams := orderTree(bracket.Root)
+	sortTeams(teams, bracket.Rounds)
+}
+
+// Helper
+func orderTree(root *BracketNode) []*BracketNode {
+	if root == nil {
+		return nil
+	}
+
+	// Slice to store unique teams in order
+	var result []*BracketNode
+
+	// Use a map to keep track of processed teams
+	processed := make(map[primitive.ObjectID]bool)
+
+	// Queue for BFS
+	queue := []*BracketNode{root}
+
+	for len(queue) > 0 {
+		levelSize := len(queue)
+
+		for i := 0; i < levelSize; i++ {
+			node := queue[0]
+			queue = queue[1:]
+
+			// Process current node if not processed
+			if node.TeamID != primitive.NilObjectID && !processed[node.TeamID] {
+				result = append(result, node)
+				processed[node.TeamID] = true
+			}
+
+			// Add children to queue
+			if node.Left != nil {
+				queue = append(queue, node.Left)
+			}
+			if node.Right != nil {
+				queue = append(queue, node.Right)
+			}
+		}
+	}
+
+	return result
+}
+
+// Helper
+func sortTeams(teams []*BracketNode, rounds int) {
+	if rounds <= 2 || len(teams) == 0 {
+		return // No sorting needed
+	}
+
+	for round := 1; round < rounds; round++ {
+		if round == rounds-1 {
+			sortSection(teams, int(math.Pow(2, float64(round))), len(teams)-1)
+		} else {
+			sortSection(teams, int(math.Pow(2, float64(round))), int(math.Pow(2, float64(round+1))))
+		}
+	}
+
+	for i := 0; i < len(teams); i++ {
+		if i == 3 {
+			UpdateTeam(teams[i].TeamID, getUpdate(3))
+		} else {
+			UpdateTeam(teams[i].TeamID, getUpdate(i+1))
+		}
+	}
+}
+
+// Helper
+func getUpdate(rank int) bson.D {
+	return bson.D{{Key: "$set", Value: bson.D{{Key: "rank", Value: rank}}}}
+}
+
+// Helper
+func sortSection(nodes []*BracketNode, start, end int) {
+	// Check if the indices are valid
+	if start < 0 || end >= len(nodes) || start >= end {
+		return
+	}
+
+	// Sort the section directly
+	sort.Slice(nodes[start:end+1], func(i, j int) bool {
+		return nodes[start+i].Seeding < nodes[start+j].Seeding
+	})
 }
 
 // Helper function for debugging

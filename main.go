@@ -16,14 +16,14 @@ func main() {
 	mux.HandleFunc("GET /api/{event_slug}/teams", routes.TeamsHandler)
 	mux.HandleFunc("GET /api/{event_slug}/pools", routes.PoolsHandler)
 	mux.HandleFunc("GET /api/{event_slug}/seeding", routes.SeedingHandler)
-	mux.HandleFunc("GET /api/{event_slug}/bracket", routes.ElimHandler)
-	// mux.HandleFunc("GET /api/{event_slug}/results", resultsHandler)
+	mux.HandleFunc("GET /api/{event_slug}/bracket", routes.BracketHandler)
+	mux.HandleFunc("GET /api/{event_slug}/results", routes.ResultsHandler)
 
 	mux.HandleFunc("POST /api/{event_slug}/start-pools", routes.StartPoolsHandler)
 	mux.HandleFunc("POST /api/{event_slug}/start-elimination", routes.StartEliminationHandler)
 
 	mux.HandleFunc("POST /api/update-pool", routes.UpdatePoolsHandler)
-	mux.HandleFunc("POST /api/update-elim", routes.UpdateElimHandler)
+	mux.HandleFunc("POST /api/update-elimination", routes.UpdateElimHandler)
 
 	handler := cors.Default().Handler(mux)
 	fmt.Println("Starting server on port 8000")

@@ -36,10 +36,13 @@
 </script>
 
 {#if data.games == null}
-	{#if isAdmin}
-		<Heading tag="h5" class="font-heading ml-2" customSize="text-xl"
-			>This division hasn't started yet. Check back later!</Heading
-		>
+	{#if $isAdmin}
+		<form method="POST" action="?/start" use:enhance>
+			<Heading tag="h5" class="font-heading ml-2" customSize="text-xl"
+				>This division hasn't started yet.
+				<button class="link text-theme hover:text-hover" type="submit">Start Pools?</button>
+			</Heading>
+		</form>
 	{:else}
 		<Heading tag="h5" class="font-heading ml-2" customSize="text-xl"
 			>This division hasn't started yet. Check back later!</Heading
@@ -48,41 +51,41 @@
 {:else}
 	{#each Object.keys(data.games) as round}
 		<Heading tag="h5" class="font-heading ml-2" customSize="text-xl">Round {round}</Heading>
-		<Table hoverable={true} divClass="ml-2 mr-2 font-default text-white">
+		<Table divClass="ml-2 mr-2 font-default">
 			<TableHead class="bg-theme text-white">
 				<TableHeadCell>Court</TableHeadCell>
 				<TableHeadCell>Team 1</TableHeadCell>
 				<TableHeadCell>Score</TableHeadCell>
 				<TableHeadCell>Team 2</TableHeadCell>
 				<TableHeadCell>Score</TableHeadCell>
-				{#if isAdmin}
+				{#if $isAdmin}
 					<TableHeadCell>Update</TableHeadCell>
 				{/if}
 			</TableHead>
-			<TableBody tableBodyClass="divide-y">
+			<TableBody>
 				{#each data.games[round] as game}
 					<TableBodyRow color="default">
-						<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium">
+						<TableBodyCell class="py-2">
 							<div class="text-black">Court {game.court}</div></TableBodyCell
 						>
-						<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
+						<TableBodyCell class="py-2"
 							><div class="text-black">{game.team1Name}</div></TableBodyCell
 						>
-						<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium">
+						<TableBodyCell class="py-2">
 							<div class="text-black">
 								{game.team1Score === undefined ? '' : game.team1Score}
 							</div>
 						</TableBodyCell>
-						<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
+						<TableBodyCell class="py-2"
 							><div class="text-black">{game.team2Name}</div></TableBodyCell
 						>
-						<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
+						<TableBodyCell class="py-2"
 							><div class="text-black">
 								{game.team2Score === undefined ? '' : game.team2Score}
 							</div></TableBodyCell
 						>
-						{#if isAdmin}
-							<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium">
+						{#if $isAdmin}
+							<TableBodyCell class="py-0">
 								<button
 									on:click={() => {
 										openModal(game._id);
@@ -103,6 +106,7 @@
 							<form
 								class="flex flex-col space-y-6"
 								method="POST"
+								action="?/update"
 								use:enhance
 								on:submit={closeModal}
 							>

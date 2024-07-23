@@ -25,6 +25,9 @@ export default {
 				hover: '#6300E2',
 				heading: '#150E1F',
 				text: '#584D66',
+				gold: '#FFD700',
+				silver: '#C0C0C0',
+				bronze: '#CD7F32'
 			},
 			fontFamily: {
 				'default': ['Source Sans Pro', 'sans-serif'],

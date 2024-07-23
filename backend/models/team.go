@@ -12,8 +12,8 @@ type Team struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Name        string             `bson:"name,omitempty" json:"name,omitempty"`
 	Event       string             `bson:"event,omitempty" json:"event,omitempty"`
-	PoolsWon    int                `bson:"poolsWon,omitempty" json:"poolsWon,omitempty"`
-	TotalPoints int                `bson:"totalPoints,omitempty" json:"totalPoints,omitempty"`
+	PoolsWon    int                `bson:"poolsWon,omitempty" json:"poolsWon,omitempty" default:"0"`
+	TotalPoints int                `bson:"totalPoints,omitempty" json:"totalPoints,omitempty" default:"0"`
 	Seeding     int                `bson:"seeding,omitempty" json:"seeding,omitempty"`
 	Rank        int                `bson:"rank,omitempty" json:"rank,omitempty"`
 
@@ -63,16 +63,16 @@ func AddTeams() {
 	}
 
 	newTeams := []interface{}{
-		Team{Name: "Team A", Event: "3rd-4th-boys"},
-		Team{Name: "Team B", Event: "3rd-4th-boys"},
-		Team{Name: "Team C", Event: "3rd-4th-boys"},
-		Team{Name: "Team D", Event: "3rd-4th-boys"},
-		Team{Name: "Team E", Event: "3rd-4th-boys"},
-		Team{Name: "Team F", Event: "3rd-4th-boys"},
-		Team{Name: "Team G", Event: "3rd-4th-boys"},
-		Team{Name: "Team H", Event: "3rd-4th-boys"},
-		Team{Name: "Team I", Event: "3rd-4th-boys"},
-		Team{Name: "Team J", Event: "3rd-4th-boys"},
+		Team{Name: "Team A", Event: "5th-6th-boys"},
+		Team{Name: "Team B", Event: "5th-6th-boys"},
+		Team{Name: "Team C", Event: "5th-6th-boys"},
+		Team{Name: "Team D", Event: "5th-6th-boys"},
+		Team{Name: "Team E", Event: "5th-6th-boys"},
+		Team{Name: "Team F", Event: "5th-6th-boys"},
+		Team{Name: "Team G", Event: "5th-6th-boys"},
+		Team{Name: "Team H", Event: "5th-6th-boys"},
+		Team{Name: "Team I", Event: "5th-6th-boys"},
+		Team{Name: "Team J", Event: "5th-6th-boys"},
 	}
 
 	_, err = configs.TeamsCollection.InsertMany(context.TODO(), newTeams)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"sort"
 	"time"
 
 	"github.com/CrossoversForCures/Tournament-Scoring/backend/models"
@@ -112,11 +113,43 @@ func SeedingHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(results)
 }
 
-func ElimHandler(w http.ResponseWriter, r *http.Request) {
+func BracketHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	eventSlug := r.PathValue("event_slug")
 
+	event := models.GetEvent(eventSlug)
+
+	if event.Status < 2 {
+		w.WriteHeader(http.StatusNotFound)
+		errorResponse := map[string]string{"error": "Elimination round hasn't started yet"}
+		json.NewEncoder(w).Encode(errorResponse)
+		return
+	}
+
 	bracket := models.GetBracket(eventSlug)
 	json.NewEncoder(w).Encode(bracket)
+}
+
+func ResultsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	eventSlug := r.PathValue("event_slug")
+
+	event := models.GetEvent(eventSlug)
+
+	if event.Status < 3 {
+		w.WriteHeader(http.StatusNotFound)
+		errorResponse := map[string]string{"error": "Event hasn't finished yet"}
+		json.NewEncoder(w).Encode(errorResponse)
+		return
+	}
+
+	teams := models.GetTeams(eventSlug)
+
+	sort.Slice(teams, func(i, j int) bool {
+		return teams[i].Rank < teams[j].Rank
+	})
+
+	json.NewEncoder(w).Encode(teams)
 }

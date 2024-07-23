@@ -1,7 +1,7 @@
 import type { Actions } from './$types';
 
 export const actions = {
-    default: async ({ cookies, request }) => {
+    update: async ({ cookies, request }) => {
         const data = await request.formData();
         const gameId = data.get('gameId') as string;
         const team1Score = Number(data.get('team1Score'));
@@ -13,6 +13,11 @@ export const actions = {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ gameId: gameId, team1Score: team1Score, team2Score: team2Score })
+        });
+    },
+    start: async ({ params }) => {
+        const response = await fetch(`http://localhost:8000/api/${params.event}/start-pools`, {
+            method: "POST"
         });
     }
 } satisfies Actions;

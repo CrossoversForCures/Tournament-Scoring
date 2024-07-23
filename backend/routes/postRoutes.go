@@ -110,4 +110,10 @@ func UpdateElimHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(errorResponse)
 		return
 	}
+
+	if bracket.Root.Team != "" {
+		models.RankTeams(team.Event)
+		models.UpdateEvent(team.Event, bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: 3}}}})
+	}
+
 }
