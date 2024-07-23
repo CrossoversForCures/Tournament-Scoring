@@ -30,5 +30,5 @@
 	<TabItem open={$routeTab === 'results'} title="Results" on:click={() => handleTabClick('results')}
 	></TabItem>
 </Tabs>
-
+<br />
 <slot />
