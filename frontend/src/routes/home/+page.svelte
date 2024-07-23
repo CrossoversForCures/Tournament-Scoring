@@ -31,7 +31,7 @@
 	contentClass=""
 	activeClasses="p-4 text-theme border-b-2 border-theme"
 >
-	<TabItem open title="Events" on:click={() => goto(`./teams`)}></TabItem>
+	<TabItem open title="Events" on:click={() => goto(`./home`)}></TabItem>
 	<TabItem title="Admin" on:click={() => (formModal = true)}></TabItem>
 </Tabs>
 <br />
