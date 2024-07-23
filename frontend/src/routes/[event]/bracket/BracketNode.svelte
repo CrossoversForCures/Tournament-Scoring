@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { isAdmin } from '$lib/stores/admin';
-	import { Dropdown, DropdownItem, Input, DropdownDivider } from 'flowbite-svelte';
+	import { Dropdown, DropdownItem, DropdownDivider } from 'flowbite-svelte';
 	import { EditOutline } from 'flowbite-svelte-icons';
 
 	export let node: BracketNode | undefined;
@@ -74,7 +74,7 @@
 						{node.seeding ? `(${node.seeding})` : ''}
 						{node.team || 'TBD'}
 					</span>
-					{#if isAdmin && node.court != 'N/A' && node.court != undefined && node.team === undefined}
+					{#if $isAdmin && node.court != 'N/A' && node.court != undefined && node.team === undefined}
 						<button>
 							<EditOutline class="text-theme ml-2 h-7 w-7 content-center" />
 						</button>
