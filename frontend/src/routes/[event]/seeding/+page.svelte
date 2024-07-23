@@ -10,32 +10,44 @@
 	} from 'flowbite-svelte';
 
 	import type { PageData } from './$types';
+	import { isAdmin } from '$lib/stores/admin';
+	import { enhance } from '$app/forms';
+
 	export let data: PageData;
 </script>
 
-<Table hoverable={true} divClass="ml-2 mr-2" color="blue">
-	<TableHead>
-		<TableHeadCell>Seed</TableHeadCell>
-		<TableHeadCell>Team</TableHeadCell>
-		<TableHeadCell>Games Won</TableHeadCell>
-		<TableHeadCell>Total Points</TableHeadCell>
-	</TableHead>
-	<TableBody tableBodyClass="divide-y">
-		{#each data.seeding as team}
-			<TableBodyRow color="custom">
-				<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
-					><div class="text-black">{team.seeding}</div></TableBodyCell
-				>
-				<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
-					><div class="text-black">{team.name}</div></TableBodyCell
-				>
-				<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
-					><div class="text-black">{team.poolsWon}</div></TableBodyCell
-				>
-				<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
-					><div class="text-black">{team.totalPoints}</div></TableBodyCell
-				>
-			</TableBodyRow>
-		{/each}
-	</TableBody>
-</Table>
+{#if data.seeding == null}
+	{#if $isAdmin}
+		<form method="POST" action="?/start" use:enhance>
+			<Heading tag="h5" class="font-heading ml-2" customSize="text-xl"
+				>The elimination round for this division hasn't started yet.
+				<button class="link text-theme hover:text-hover" type="submit">Start Elimination?</button>
+			</Heading>
+		</form>
+	{:else}
+		<Heading tag="h5" class="font-heading ml-2" customSize="text-xl"
+			>The elimination round for this division hasn't started yet. Check back later!</Heading
+		>
+	{/if}
+{:else}
+	<Table divClass="ml-2 mr-2 font-default">
+		<TableHead class="bg-theme text-white">
+			<TableHeadCell>Seed</TableHeadCell>
+			<TableHeadCell>Team</TableHeadCell>
+			<TableHeadCell>Games Won</TableHeadCell>
+			<TableHeadCell>Total Points</TableHeadCell>
+		</TableHead>
+		<TableBody>
+			{#each data.seeding as team}
+				<TableBodyRow color="custom">
+					<TableBodyCell class="py-2"><div class="text-black">{team.seeding}</div></TableBodyCell>
+					<TableBodyCell class="py-2"><div class="text-black">{team.name}</div></TableBodyCell>
+					<TableBodyCell class="py-2"><div class="text-black">{team.poolsWon}</div></TableBodyCell>
+					<TableBodyCell class="py-2"
+						><div class="text-black">{team.totalPoints}</div></TableBodyCell
+					>
+				</TableBodyRow>
+			{/each}
+		</TableBody>
+	</Table>
+{/if}

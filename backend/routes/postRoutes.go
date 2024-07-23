@@ -12,13 +12,10 @@ import (
 func StartPoolsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	eventId, err := primitive.ObjectIDFromHex(r.PathValue("event_id"))
-	if err != nil {
-		panic(err)
-	}
+	eventSlug := r.PathValue("event_slug")
 
-	models.SortPools(eventId)
-	models.UpdateEvent(eventId, bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: 1}}}})
+	models.SortPools(eventSlug)
+	models.UpdateEvent(eventSlug, bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: 1}}}})
 
 	response := map[string]string{"response": "Pools successfuly started"}
 	json.NewEncoder(w).Encode(response)
@@ -27,14 +24,11 @@ func StartPoolsHandler(w http.ResponseWriter, r *http.Request) {
 func StartEliminationHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	eventId, err := primitive.ObjectIDFromHex(r.PathValue("event_id"))
-	if err != nil {
-		panic(err)
-	}
+	eventSlug := r.PathValue("event_slug")
 
-	models.SeedTeams(eventId)
-	models.MakeBracket(eventId)
-	models.UpdateEvent(eventId, bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: 2}}}})
+	models.SeedTeams(eventSlug)
+	models.MakeBracket(eventSlug)
+	models.UpdateEvent(eventSlug, bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: 2}}}})
 
 	response := map[string]string{"response": "Elimination successfuly started"}
 	json.NewEncoder(w).Encode(response)
@@ -44,21 +38,24 @@ func UpdatePoolsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	type request struct {
-		Team1Score int `bson:"team1_score" json:"team1Score"`
-		Team2Score int `bson:"team2_score" json:"team2Score"`
-	}
-
-	gameId, err := primitive.ObjectIDFromHex(r.PathValue("game_id"))
-	if err != nil {
-		panic(err)
+		GameID     primitive.ObjectID `bson:"gameId" json:"gameId"`
+		Team1Score json.Number        `bson:"team1Score" json:"team1Score"`
+		Team2Score json.Number        `bson:"team2Score" json:"team2Score"`
 	}
 
 	var newRequest request
-	err = json.NewDecoder(r.Body).Decode(&newRequest)
+	err := json.NewDecoder(r.Body).Decode(&newRequest)
 	if err != nil {
 		http.Error(w, "Error reading request body", http.StatusBadRequest)
 		return
 	}
+
+	gameId, err := primitive.ObjectIDFromHex(newRequest.GameID.Hex())
+	if err != nil {
+		panic(err)
+	}
+	team1Score, _ := newRequest.Team1Score.Int64()
+	team2Score, _ := newRequest.Team2Score.Int64()
 
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "team1Score", Value: newRequest.Team1Score}, {Key: "team2Score", Value: newRequest.Team2Score}}}}
 	models.UpdatePool(gameId, update)
@@ -66,8 +63,8 @@ func UpdatePoolsHandler(w http.ResponseWriter, r *http.Request) {
 	poolGame := models.GetPool(gameId)
 	team1 := models.GetTeam(poolGame.Team1)
 	team2 := models.GetTeam(poolGame.Team2)
-	team1Update := bson.D{{Key: "$set", Value: bson.D{{Key: "totalPoints", Value: team1.TotalPoints + newRequest.Team1Score}}}}
-	team2Update := bson.D{{Key: "$set", Value: bson.D{{Key: "totalPoints", Value: team2.TotalPoints + newRequest.Team2Score}}}}
+	team1Update := bson.D{{Key: "$set", Value: bson.D{{Key: "totalPoints", Value: team1.TotalPoints + int(team1Score)}}}}
+	team2Update := bson.D{{Key: "$set", Value: bson.D{{Key: "totalPoints", Value: team2.TotalPoints + int(team2Score)}}}}
 
 	models.UpdateTeam(team1.ID, team1Update)
 	models.UpdateTeam(team2.ID, team2Update)
@@ -85,13 +82,38 @@ func UpdatePoolsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateElimHandler(w http.ResponseWriter, r *http.Request) {
-	// w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 
-	// teamId, err := primitive.ObjectIDFromHex(r.PathValue("team_id"))
-	// if err != nil {
-	// 	panic(err)
-	// }
+	type request struct {
+		TeamID primitive.ObjectID `bson:"teamId" json:"teamId"`
+	}
 
-	// // models.ElimBracket.SetWinner(models.GetTeam(teamId))
-	// // models.ElimBracket.PrintTree(models.ElimBracket.Root, 0)
+	var newRequest request
+	err := json.NewDecoder(r.Body).Decode(&newRequest)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusBadRequest)
+		return
+	}
+
+	teamId, err := primitive.ObjectIDFromHex(newRequest.TeamID.Hex())
+	if err != nil {
+		panic(err)
+	}
+
+	team := models.GetTeam(teamId)
+	bracket := models.GetBracket(team.Event)
+	if models.SetWinner(bracket.Root, team.ID, &bracket.Courts) {
+		models.UpdateBracket(team.Event, bson.D{{Key: "$set", Value: bson.D{{Key: "root", Value: bracket.Root}, {Key: "courts", Value: bracket.Courts}}}})
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		errorResponse := map[string]string{"error": "No valid matchup"}
+		json.NewEncoder(w).Encode(errorResponse)
+		return
+	}
+
+	if bracket.Root.Team != "" {
+		models.RankTeams(team.Event)
+		models.UpdateEvent(team.Event, bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: 3}}}})
+	}
+
 }

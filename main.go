@@ -13,18 +13,17 @@ func main() {
 	configs.ConnectDB()
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/home", routes.HomeHandler)
-	mux.HandleFunc("GET /api/{event_id}/teams", routes.TeamsHandler)
-	mux.HandleFunc("GET /api/{event_id}/pools", routes.PoolsHandler)
-	mux.HandleFunc("GET /api/{event_id}/seeding", routes.SeedingHandler)
-	mux.HandleFunc("GET /api/{eventId}/bracket", routes.ElimHandler)
+	mux.HandleFunc("GET /api/{event_slug}/teams", routes.TeamsHandler)
+	mux.HandleFunc("GET /api/{event_slug}/pools", routes.PoolsHandler)
+	mux.HandleFunc("GET /api/{event_slug}/seeding", routes.SeedingHandler)
+	mux.HandleFunc("GET /api/{event_slug}/bracket", routes.BracketHandler)
+	mux.HandleFunc("GET /api/{event_slug}/results", routes.ResultsHandler)
 
-	mux.HandleFunc("POST /api/{event_id}/start-pools", routes.StartPoolsHandler)
-	mux.HandleFunc("POST /api/{event_id}/start-elimination", routes.StartEliminationHandler)
+	mux.HandleFunc("POST /api/{event_slug}/start-pools", routes.StartPoolsHandler)
+	mux.HandleFunc("POST /api/{event_slug}/start-elimination", routes.StartEliminationHandler)
 
-	mux.HandleFunc("POST /api/{game_id}/score", routes.UpdatePoolsHandler)
-	mux.HandleFunc("POST /api/{team_id}/winner", routes.UpdateElimHandler)
-
-	// mux.HanleFunc("GET /api/{eventId}/results", resultsHandler)
+	mux.HandleFunc("POST /api/update-pool", routes.UpdatePoolsHandler)
+	mux.HandleFunc("POST /api/update-elimination", routes.UpdateElimHandler)
 
 	handler := cors.Default().Handler(mux)
 	fmt.Println("Starting server on port 8000")
