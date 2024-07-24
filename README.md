@@ -1,16 +1,38 @@
 # Tournament-Scoring
 
 ## Project Overview
-This is the backend API designed to facilitate the organization and tracking of Elevate 4 Epilepsy basketball tournaments. It provides both GET routes and POST routes to view and manage each tournament division. 
+This website is designed to facilitate the organization and tracking of Elevate 4 Epilepsy basketball tournaments. It provides a spectator and admin view to track and update teams, court assignments, and scores for each tournament division. It also provides the backend logic to sort teams into initial pools and later brackets based on their wins and total points. Checkout the frontend at _ and the backend at _.
 
+## About Crossovers 4 Cures
+Crossovers for Cures raises money through basketball tournaments and events to combat some of the planet's most confusing diseases and disorders. Their annual tournament, Elevate 4 Epilepsy, takes place in Dublin, Ohio and has raised over $40,000 for epilepsy research through institutions such as NYU Langone. In 2024, C4C founder Dustin He asked me to build this scoring website to improve the efficiency of future basketball tournaments.
 
-## Usage
+## Screenshots
+**The home page**
+![alt text](screenshots/home.png)
+
+**Spectator view of the pool games**
+![alt text](screenshots/spectator-pools.png)
+
+**Admin view of the bracket**
+![alt text](screenshots/admin-bracket.png)
+
+**View of the final results page**
+![alt text](screenshots/spectator-results.png)
+
+**Admin login**
+![alt text](screenshots/admin-login.png)
+
+## Technology
+The backend API for this website was built completely with Go. The frontend was built with SvelteKit and TailwindCSS using Typescript. Additionally, many components come from the Flowbite Svelte library. The database used is MongoDB.
+
+## API
 ### GET Requests
-#### GET `/api/home` returns a list of all the events as well as information about the tournament.
+**GET `/api/home` returns a list of all the divisions as well as information about the tournament.**
 Example Request: `GET http://localhost:8000/api/home`
 
 Example Response:
 ```
+content-type: application/json
 {
   "year": 2024,
   "events": [
@@ -18,24 +40,25 @@ Example Response:
       "_id": "66988d7a98e653bd9fc78d84",
       "name": "3rd/4th Boys",
       "slug": "3rd-4th-boys",
-      "time": "0001-01-01T00:00:00Z",
+      "time": "9:00AM",
     },
     {
       "_id": "66988d7a98e653bd9fc78d85",
       "name": "5th/6th Boys",
       "slug": "5th-6th-boys",
-      "time": "0001-01-01T00:00:00Z",
+      "time": "11:30AM",
     },
     ...
   ]
 }
 ```
 
-#### GET `/api/{event_slug}/teams` returns a list of teams for the event.
+**GET `/api/{event_slug}/teams` returns a list of teams for the division.**
 Example Request: `GET http://localhost:8000/api/3rd-4th-boys/teams`
 
 Example Response: 
 ```
+content-type: application/json
 {
   [
   {
@@ -53,11 +76,12 @@ Example Response:
 }
 ```
 
-#### GET `/api/{event_slug}/pools` returns a map of pool rounds and games for the event. If pools haven't started, it will return an error.
+**GET `/api/{event_slug}/pools` returns a map of pool rounds and games for the division. If pools haven't started, it will return an error.**
 Example Request: `GET http://localhost:8000/api/3rd-4th-boys/pools`
 
 Example Response: 
 ```
+content-type: application/json
 {
   "1": [
     {
@@ -88,11 +112,12 @@ Example Response:
 }
 ```
 
-#### GET `/api/{event_slug}/seeding` returns an ordered list of all the seeded teams for an event. If pools haven't finished, it will return an error.
+**GET `/api/{event_slug}/seeding` returns an ordered list of all the seeded teams for the division. If pools haven't finished, it will return an error.**
 Example Request: `GET http://localhost:8000/api/3rd-4th-boys/seeding`
 
 Example Response: 
 ```
+content-type: application/json
 {
   "1": [
     {
@@ -123,11 +148,12 @@ Example Response:
 }
 ```
 
-#### GET `/api/{event_slug}/bracket` returns the elimination bracket as a binary tree. If elimination hasn't started yet, it will return an error.
+**GET `/api/{event_slug}/bracket` returns the elimination bracket for the division as a binary tree. It also contains information about the available courts. If elimination hasn't started yet, it will return an error.**
 Example Request: `GET http://localhost:8000/api/3rd-4th-boys/bracket`
 
 Example Response: 
 ```
+content-type: application/json
 {
   "event": "3rd-4th-boys",
   "rounds": 4,
@@ -149,5 +175,119 @@ Example Response:
 }
 ```
 
+**GET `/api/{event_slug}/bracket` returns the elimination bracket as a binary tree. If elimination hasn't started yet, it will return an error.**
+Example Request: `GET http://localhost:8000/api/3rd-4th-boys/bracket`
+
+Example Response: 
+```
+content-type: application/json
+{
+  "event": "3rd-4th-boys",
+  "rounds": 4,
+  "courts": ["A", "B"],
+  "root": {
+    "teamId": "000000000000000000000000",
+    "left": {
+      "team": "Team A",
+      "teamId": "669893052342d778f9b4358a",
+      "seeding": 1,
+    },
+    "right": {
+      "team": "Team B",
+      "teamId": "669893052342d778f9b4358b",
+      "seeding": 2,
+    },
+    "court": "A" 
+  }
+}
+```
+
+**GET `/api/{event_slug}/results` returns the final results as a list. If elimination hasn't finished yet, it will return an error.**
+Example Request: `GET http://localhost:8000/api/3rd-4th-boys/results`
+
+Example Response: 
+```
+content-type: application/json
+[
+  {
+    "_id": "669f12060cabf77119d9cc3f",
+    "name": "Team D",
+    "event": "5th-6th-boys",
+    "poolsWon": 2,
+    "totalPoints": 153,
+    "seeding": 1,
+    "rank": 1
+  },
+  {
+    "_id": "669f12060cabf77119d9cc42",
+    "name": "Team G",
+    "event": "5th-6th-boys",
+    "poolsWon": 2,
+    "totalPoints": 122,
+    "seeding": 3,
+    "rank": 2
+  },
+  ...
+]
+```
+
+### POST Requests
+**POST `/api/{event_slug}/start-pools` starts the pool round for the division.**
+Example Request: `POST /api/3rd-4th-boys/start-pools`
+
+Example Response:
+```
+content-type: application/json
+{
+  "response": "Pools successfuly started"
+}
+```
+
+**POST `/api/{event_slug}/start-elimination` starts the elimination round for the division.**
+Example Request: `POST /api/3rd-4th-boys/start-elimination`
+
+Example Response:
+```
+content-type: application/json
+{
+  "response": "Elimination successfuly started"
+}
+```
+
+**POST `/api/update-pool` updates a pool game with both team's scores.**
+Example Request: `POST /api/update-pool`
+```
+content-type: application/json
+{
+		"gameId": "66a04aa146184fb4574e6d4c",
+    "team1Score": "17",
+    "team2Score": "24"
+}
+```
+Example Response:
+```
+content-type: application/json
+{
+  "response": "Game successfuly updated"
+}
+```
+
+**POST `/api/update-elimination` advances a team in the elimination bracket it belongs to.**
+Example Request: `POST /api/update-elimination`
+```
+content-type: application/json
+{
+    "teamId": "669c23fb70b0b1c2cb2e8317"
+}
+```
+
+Example Response:
+content-type: application/json
+```
+{
+  "response": "Team successfuly updated"
+}
+```
+
 ## Contributing
-Brian Zhou
+Brian Zhou, Dustin He

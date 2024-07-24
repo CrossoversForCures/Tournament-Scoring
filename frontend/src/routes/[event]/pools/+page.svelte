@@ -101,7 +101,7 @@
 							size="xs"
 							autoclose={false}
 							class="w-full"
-							backdropClass="fixed inset-0 z-40 bg-gray-900 bg-opacity-50"
+							backdropClass="fixed inset-0 z-40 bg-gray-900 !opacity-10"
 						>
 							<form
 								class="flex flex-col space-y-6"
@@ -112,11 +112,11 @@
 							>
 								<input type="hidden" name="gameId" value={$editingGame} />
 								<Label class="active:border-theme space-y-2">
-									<span>Team 1 Score</span>
+									<span>Team 1 ({game.team1Name}) Score</span>
 									<Input type="number" name="team1Score" required />
 								</Label>
 								<Label class="space-y-2">
-									<span>Team 2 Score</span>
+									<span>Team 2 ({game.team2Name}) Score</span>
 									<Input type="number" name="team2Score" required />
 								</Label>
 								<Button type="submit" class="w-full1 bg-theme hover:bg-hover">Confirm</Button>

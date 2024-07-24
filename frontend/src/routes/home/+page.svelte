@@ -63,7 +63,7 @@
 			<Input type="text" name="username" required />
 		</Label>
 		<Label class="space-y-2">
-			<span>Your password</span>
+			<span>Password</span>
 			<Input type="password" name="password" required />
 		</Label>
 

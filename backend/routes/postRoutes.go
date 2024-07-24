@@ -116,4 +116,6 @@ func UpdateElimHandler(w http.ResponseWriter, r *http.Request) {
 		models.UpdateEvent(team.Event, bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: 3}}}})
 	}
 
+	response := map[string]string{"response": "Team successfuly updated"}
+	json.NewEncoder(w).Encode(response)
 }
