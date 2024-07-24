@@ -1,7 +1,15 @@
 # Tournament-Scoring
 
 ## Project Overview
-This website is designed to facilitate the organization and tracking of Elevate 4 Epilepsy basketball tournaments. It provides a spectator and admin view to track and update teams, court assignments, and scores for each tournament division. It also provides the backend logic to sort teams into initial pools and later brackets based on their wins and total points. Checkout the frontend at _ and the backend at _.
+This proiect is designed to facilitate the organization and tracking of Elevate 4 Epilepsy basketball tournaments. Check it out at _.  
+
+## Features
+* Spectator view to check scores and standings for different divisions  
+* Player view to check court assignments and opponents during the tournament, eliminating crowding near bulletin boards  
+* Admin view to update scores and winners during the tournament  
+* Automatic court assignments for pool and elimination games based on available courts to streamline efficiency of tournaments
+* Logic to sort teams into initial pools where each team plays 2 games against random opponents  
+* Logic to place teams into elmination bracket based on pool wins and points scored  
 
 ## About Crossovers 4 Cures
 Crossovers for Cures raises money through basketball tournaments and events to combat some of the planet's most confusing diseases and disorders. Their annual tournament, Elevate 4 Epilepsy, takes place in Dublin, Ohio and has raised over $40,000 for epilepsy research through institutions such as NYU Langone. In 2024, C4C founder Dustin He asked me to build this scoring website to improve the efficiency of future basketball tournaments.
@@ -23,12 +31,14 @@ Crossovers for Cures raises money through basketball tournaments and events to c
 ![alt text](screenshots/admin-login.png)
 
 ## Technology
-The backend API for this website was built completely with Go. The frontend was built with SvelteKit and TailwindCSS using Typescript. Additionally, many components come from the Flowbite Svelte library. The database used is MongoDB.
+Backend: Go  
+Frontend: SvelteKit using Typescript and TailwindCSS
+Databse: MongoDB  
 
 ## API
 ### GET Requests
-**GET `/api/home` returns a list of all the divisions as well as information about the tournament.**
-Example Request: `GET http://localhost:8000/api/home`
+**GET `/api/home` returns a list of all the divisions as well as information about the tournament.**  
+Example Request: `GET http://localhost:8000/api/home`  
 
 Example Response:
 ```
@@ -53,8 +63,8 @@ content-type: application/json
 }
 ```
 
-**GET `/api/{event_slug}/teams` returns a list of teams for the division.**
-Example Request: `GET http://localhost:8000/api/3rd-4th-boys/teams`
+**GET `/api/{event_slug}/teams` returns a list of teams for the division.**  
+Example Request: `GET http://localhost:8000/api/3rd-4th-boys/teams`  
 
 Example Response: 
 ```
@@ -76,8 +86,8 @@ content-type: application/json
 }
 ```
 
-**GET `/api/{event_slug}/pools` returns a map of pool rounds and games for the division. If pools haven't started, it will return an error.**
-Example Request: `GET http://localhost:8000/api/3rd-4th-boys/pools`
+**GET `/api/{event_slug}/pools` returns a map of pool rounds and games for the division. If pools haven't started, it will return an error.**  
+Example Request: `GET http://localhost:8000/api/3rd-4th-boys/pools`  
 
 Example Response: 
 ```
@@ -112,8 +122,8 @@ content-type: application/json
 }
 ```
 
-**GET `/api/{event_slug}/seeding` returns an ordered list of all the seeded teams for the division. If pools haven't finished, it will return an error.**
-Example Request: `GET http://localhost:8000/api/3rd-4th-boys/seeding`
+**GET `/api/{event_slug}/seeding` returns an ordered list of all the seeded teams for the division. If pools haven't finished, it will return an error.**  
+Example Request: `GET http://localhost:8000/api/3rd-4th-boys/seeding`  
 
 Example Response: 
 ```
@@ -148,8 +158,8 @@ content-type: application/json
 }
 ```
 
-**GET `/api/{event_slug}/bracket` returns the elimination bracket for the division as a binary tree. It also contains information about the available courts. If elimination hasn't started yet, it will return an error.**
-Example Request: `GET http://localhost:8000/api/3rd-4th-boys/bracket`
+**GET `/api/{event_slug}/bracket` returns the elimination bracket for the division as a binary tree. It also contains information about the available courts. If elimination hasn't started yet, it will return an error.**  
+Example Request: `GET http://localhost:8000/api/3rd-4th-boys/bracket`  
 
 Example Response: 
 ```
@@ -175,8 +185,8 @@ content-type: application/json
 }
 ```
 
-**GET `/api/{event_slug}/bracket` returns the elimination bracket as a binary tree. If elimination hasn't started yet, it will return an error.**
-Example Request: `GET http://localhost:8000/api/3rd-4th-boys/bracket`
+**GET `/api/{event_slug}/bracket` returns the elimination bracket as a binary tree. If elimination hasn't started yet, it will return an error.**  
+Example Request: `GET http://localhost:8000/api/3rd-4th-boys/bracket`  
 
 Example Response: 
 ```
@@ -202,8 +212,8 @@ content-type: application/json
 }
 ```
 
-**GET `/api/{event_slug}/results` returns the final results as a list. If elimination hasn't finished yet, it will return an error.**
-Example Request: `GET http://localhost:8000/api/3rd-4th-boys/results`
+**GET `/api/{event_slug}/results` returns the final results as a list. If elimination hasn't finished yet, it will return an error.**  
+Example Request: `GET http://localhost:8000/api/3rd-4th-boys/results`  
 
 Example Response: 
 ```
@@ -232,8 +242,8 @@ content-type: application/json
 ```
 
 ### POST Requests
-**POST `/api/{event_slug}/start-pools` starts the pool round for the division.**
-Example Request: `POST /api/3rd-4th-boys/start-pools`
+**POST `/api/{event_slug}/start-pools` starts the pool round for the division.**  
+Example Request: `POST /api/3rd-4th-boys/start-pools`  
 
 Example Response:
 ```
@@ -243,8 +253,8 @@ content-type: application/json
 }
 ```
 
-**POST `/api/{event_slug}/start-elimination` starts the elimination round for the division.**
-Example Request: `POST /api/3rd-4th-boys/start-elimination`
+**POST `/api/{event_slug}/start-elimination` starts the elimination round for the division.**  
+Example Request: `POST /api/3rd-4th-boys/start-elimination`  
 
 Example Response:
 ```
@@ -254,8 +264,8 @@ content-type: application/json
 }
 ```
 
-**POST `/api/update-pool` updates a pool game with both team's scores.**
-Example Request: `POST /api/update-pool`
+**POST `/api/update-pool` updates a pool game with both team's scores.**  
+Example Request: `POST /api/update-pool`  
 ```
 content-type: application/json
 {
@@ -272,8 +282,8 @@ content-type: application/json
 }
 ```
 
-**POST `/api/update-elimination` advances a team in the elimination bracket it belongs to.**
-Example Request: `POST /api/update-elimination`
+**POST `/api/update-elimination` advances a team in the elimination bracket it belongs to.**  
+Example Request: `POST /api/update-elimination`  
 ```
 content-type: application/json
 {
@@ -290,4 +300,6 @@ content-type: application/json
 ```
 
 ## Contributing
-Brian Zhou, Dustin He
+Brian Zhou, Dustin He  
+
+**If you've made it this far, please consider donating at https://www.crossoversforcures.org/donate/!**  
