@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+import { env as privateEnv } from '$env/dynamic/private';
 import { dev } from '$app/environment';
 
 interface Env {
@@ -9,8 +9,8 @@ interface Env {
 
 // Create a type-safe environment object
 const env: Env = {
-    ADMIN_USERNAME: process.env.ADMIN_USERNAME || '',
-    ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || '',
+    ADMIN_USERNAME: privateEnv.ADMIN_USERNAME || '',
+    ADMIN_PASSWORD: privateEnv.ADMIN_PASSWORD || '',
 };
 
 // In development, verify all variables are set

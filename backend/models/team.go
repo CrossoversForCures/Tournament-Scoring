@@ -74,20 +74,15 @@ func AddTeams() {
 		panic(err)
 	}
 
-	newTeams := []interface{}{
-		Team{Name: "Team A", Event: "5th-6th-boys"},
-		Team{Name: "Team B", Event: "5th-6th-boys"},
-		Team{Name: "Team C", Event: "5th-6th-boys"},
-		Team{Name: "Team D", Event: "5th-6th-boys"},
-		Team{Name: "Team E", Event: "5th-6th-boys"},
-		Team{Name: "Team F", Event: "5th-6th-boys"},
-		Team{Name: "Team G", Event: "5th-6th-boys"},
-		Team{Name: "Team H", Event: "5th-6th-boys"},
-		Team{Name: "Team I", Event: "5th-6th-boys"},
-		Team{Name: "Team J", Event: "5th-6th-boys"},
+	newTeams, err := GetAllTeams()
+	if err != nil {
+		panic(err)
 	}
-
-	_, err = configs.TeamsCollection.InsertMany(context.TODO(), newTeams)
+	newTeamsInterface := make([]interface{}, len(newTeams))
+	for i, t := range newTeams {
+		newTeamsInterface[i] = t
+	}
+	_, err = configs.TeamsCollection.InsertMany(context.TODO(), newTeamsInterface)
 
 	if err != nil {
 		panic(err)
