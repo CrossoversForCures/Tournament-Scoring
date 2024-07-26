@@ -63,7 +63,7 @@ func InsertTeam(newTeam Team) {
 	}
 }
 
-// Test Method
+// Add all teams
 func AddTeams() {
 	_, err := configs.TeamsCollection.DeleteMany(context.TODO(), bson.D{})
 	if err != nil {
