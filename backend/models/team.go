@@ -56,6 +56,13 @@ func UpdateTeam(_id primitive.ObjectID, update bson.D) {
 	}
 }
 
+func InsertTeam(newTeam Team) {
+	_, err := configs.TeamsCollection.InsertOne(context.TODO(), newTeam)
+	if err != nil {
+		panic(err)
+	}
+}
+
 // Test Method
 func AddTeams() {
 	_, err := configs.TeamsCollection.DeleteMany(context.TODO(), bson.D{})
