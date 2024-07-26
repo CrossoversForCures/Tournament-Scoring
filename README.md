@@ -11,7 +11,7 @@ This proiect is designed to facilitate the organization and tracking of Elevate 
 * Logic to sort teams into initial pools where each team plays 2 games against random opponents  
 * Logic to place teams into elmination bracket based on pool wins and points scored  
 
-## About Crossovers 4 Cures
+## About Crossovers for Cures
 Crossovers for Cures raises money through basketball tournaments and events to combat some of the planet's most confusing diseases and disorders. Their annual tournament, Elevate 4 Epilepsy, takes place in Dublin, Ohio and has raised over $40,000 for epilepsy research through institutions such as NYU Langone. In 2024, C4C founder Dustin He asked me to build this scoring website to improve the efficiency of future basketball tournaments.
 
 
