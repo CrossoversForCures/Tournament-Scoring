@@ -58,13 +58,13 @@
 
 <Modal bind:open={formModal} size="xs" autoclose={false} class="w-full">
 	<form class="flex flex-col space-y-6" method="POST" use:enhance>
-		<Label class="active:border-theme space-y-2">
+		<Label class="space-y-2">
 			<span>Username</span>
-			<Input type="text" name="username" required />
+			<Input type="text" name="username" required class="focus:ring-hover focus:border-hover" />
 		</Label>
 		<Label class="space-y-2">
 			<span>Password</span>
-			<Input type="password" name="password" required />
+			<Input class="focus:ring-hover focus:border-hover" type="password" name="password" required />
 		</Label>
 
 		{#if form?.incorrect}
