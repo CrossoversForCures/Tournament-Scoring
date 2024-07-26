@@ -31,6 +31,7 @@ func main() {
 
 	handler := cors.Default().Handler(mux)
 	fmt.Println("Starting server on port 8000")
+	// http.ListenAndServe(":8000", handler)
 	listener, err := net.Listen("tcp", "[::]:8000")
 	if err != nil {
 		fmt.Printf("Failed to listen on [::]:8000: %v\n", err)
@@ -38,6 +39,7 @@ func main() {
 	}
 
 	err = http.Serve(listener, handler)
+
 	if err != nil {
 		fmt.Printf("Server failed: %v\n", err)
 	}
