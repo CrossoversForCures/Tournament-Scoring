@@ -28,10 +28,12 @@ func ConnectDB() {
 		panic(err)
 	}
 
-	EventsCollection = client.Database("tournament_scoring").Collection("events")
-	TeamsCollection = client.Database("tournament_scoring").Collection("teams")
-	PoolGamesCollection = client.Database("tournament_scoring").Collection("pools")
-	BracketsCollection = client.Database("tournament_scoring").Collection("brackets")
+	db_name := os.Getenv("DATABASE_NAME")
+
+	EventsCollection = client.Database(db_name).Collection("events")
+	TeamsCollection = client.Database(db_name).Collection("teams")
+	PoolGamesCollection = client.Database(db_name).Collection("pools")
+	BracketsCollection = client.Database(db_name).Collection("brackets")
 }
 
 func GetStripeKey() string {
