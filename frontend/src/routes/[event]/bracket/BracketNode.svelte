@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { isAdmin } from '$lib/stores/admin';
 	import { Dropdown, DropdownItem, DropdownDivider } from 'flowbite-svelte';
 	import { EditOutline } from 'flowbite-svelte-icons';
 
@@ -73,6 +74,23 @@
 						{node.seeding ? `(${node.seeding})` : ''}
 						{node.team || 'TBD'}
 					</span>
+					{#if $isAdmin && node.court != 'N/A' && node.court != undefined && node.team === undefined}
+						<button>
+							<EditOutline class="text-theme ml-2 h-7 w-7 content-center" />
+						</button>
+						<Dropdown>
+							<form method="POST" action="?/update">
+								<input type="hidden" name="teamId" value="" />
+								<DropdownItem on:click={() => submitForm(node.left?.teamId)}
+									>({node.left.seeding}) {node.left.team}</DropdownItem
+								>
+								<DropdownDivider class="bg-heading" />
+								<DropdownItem on:click={() => submitForm(node.right?.teamId)}
+									>({node.right.seeding}) {node.right.team}</DropdownItem
+								>
+							</form>
+						</Dropdown>
+					{/if}
 				</div>
 			</div>
 		</div>
