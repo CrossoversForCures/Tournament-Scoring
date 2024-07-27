@@ -1,7 +1,7 @@
 # Tournament-Scoring
 
 ## Project Overview
-This proiect is designed to facilitate the organization and tracking of Elevate 4 Epilepsy basketball tournaments. Check it out at _.  
+This proiect is designed to facilitate the organization and tracking of Elevate 4 Epilepsy basketball tournaments. Check it out at http://tournament.crossoversforcures.org/home.  
 
 ## Features
 * Spectator view to check scores and standings for different divisions  
