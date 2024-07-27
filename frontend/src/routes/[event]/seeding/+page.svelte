@@ -40,9 +40,12 @@
 		<TableBody>
 			{#each data.seeding as team}
 				<TableBodyRow color="custom">
-					<TableBodyCell class="py-2"><div class="text-black">{team.seeding}</div></TableBodyCell>
-					<TableBodyCell class="py-2"><div class="text-black">{team.name}</div></TableBodyCell>
-					<TableBodyCell class="py-2"
+					<TableBodyCell class="w-1/10 py-2"
+						><div class="text-black">{team.seeding}</div></TableBodyCell
+					>
+					<TableBodyCell class="w-1/6 py-2"><div class="text-black">{team.name}</div></TableBodyCell
+					>
+					<TableBodyCell class="w-1/10 py-2"
 						><div class="text-black">
 							{#if team.poolsWon === undefined}
 								0
@@ -50,7 +53,7 @@
 								{team.poolsWon}{/if}
 						</div></TableBodyCell
 					>
-					<TableBodyCell class="py-2"
+					<TableBodyCell class="w-1/10 py-2"
 						><div class="text-black">
 							{#if team.totalPoints === undefined}
 								0

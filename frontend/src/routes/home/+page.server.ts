@@ -1,6 +1,7 @@
-import env from '$lib/load-env';
-import type { PageServerLoad, Actions } from './$types';
+import type { Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
+const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD
 
 export const actions = {
     default: async ({ cookies, request }) => {
@@ -8,7 +9,7 @@ export const actions = {
         const username = data.get('username');
         const password = data.get('password');
 
-        if (username && password && username === env.ADMIN_USERNAME && password === env.ADMIN_PASSWORD) {
+        if (username && password && username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
             cookies.set('session', 'admin', { path: '/', httpOnly: true, sameSite: 'strict', maxAge: 60 * 60 * 24 * 7 });
             throw redirect(303, '/');
         }
