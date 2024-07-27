@@ -9,8 +9,8 @@ interface Env {
 
 // Create a type-safe environment object
 const env: Env = {
-    ADMIN_USERNAME: privateEnv.ADMIN_USERNAME || '',
-    ADMIN_PASSWORD: privateEnv.ADMIN_PASSWORD || '',
+    ADMIN_USERNAME: privateEnv.VITE_ADMIN_USERNAME || '',
+    ADMIN_PASSWORD: privateEnv.VITE_ADMIN_PASSWORD || '',
 };
 
 // In development, verify all variables are set
