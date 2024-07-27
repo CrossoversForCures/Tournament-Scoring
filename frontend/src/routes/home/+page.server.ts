@@ -19,7 +19,7 @@ export const actions = {
         console.log('Password received:', !!password);
 
         if (username && password && username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-            cookies.set('session', 'admin', { path: '/', httpOnly: false, sameSite: 'strict', maxAge: 60 * 60 * 24 * 7 });
+            cookies.set('session', 'admin', { path: '/', httpOnly: false, sameSite: 'strict', secure: false, maxAge: 60 * 60 * 24 * 7 });
             console.log('Credentials match, setting cookie');
 
             cookies.set('session', 'admin', { 
