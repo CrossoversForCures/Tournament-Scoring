@@ -90,7 +90,7 @@ func SortPools(event string) {
 
 		var currentGames []matchup
 
-		for ok := true; ok; ok = (duplicateGame(gamesPlayed, currentGames)) {
+		for ok := true; ok; ok = (isDuplicateGame(gamesPlayed, currentGames)) {
 			currentGames = nil
 			// Shuffle the teams left this round
 			for i := 0; i < teamsLeftThisRound; i++ {
@@ -144,7 +144,7 @@ func SortPools(event string) {
 	}
 }
 
-func duplicateGame(games []matchup, target []matchup) bool {
+func isDuplicateGame(games []matchup, target []matchup) bool {
 	for _, game := range target {
 		for _, item := range games {
 			if item.Team1.Name == game.Team1.Name && item.Team2.Name == game.Team2.Name {
