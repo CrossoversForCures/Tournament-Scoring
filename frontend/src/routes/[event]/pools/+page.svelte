@@ -22,10 +22,19 @@
 	export let data: PageData;
 	export let formModal = false;
 
-	const editingGame: Writable<string | null> = writable(null);
+	interface Game {
+		team1Score: number | null;
+		team2Score: number | null;
+	}
 
-	function openModal(gameId: string) {
+	const editingGame: Writable<string | null> = writable(null);
+	const editingTeam1: Writable<string | null> = writable(null);
+	const editingTeam2: Writable<string | null> = writable(null);
+
+	function openModal(gameId: string, team1: string, team2: string) {
 		editingGame.set(gameId);
+		editingTeam1.set(team1);
+		editingTeam2.set(team2);
 		formModal = true;
 	}
 
@@ -51,7 +60,7 @@
 {:else}
 	{#each Object.keys(data.games) as round}
 		<Heading tag="h5" class="font-heading ml-2" customSize="text-xl">Round {round}</Heading>
-		<Table divClass="ml-2 mr-2 font-default w-[95%]">
+		<Table divClass="ml-2 mr-2 font-default">
 			<TableHead class="bg-theme text-white">
 				<TableHeadCell>Court</TableHeadCell>
 				<TableHeadCell>Team 1</TableHeadCell>
@@ -74,7 +83,7 @@
 								? 'text-green-500'
 								: 'text-red-500'}"
 						>
-							{game.team1Score === undefined ? '' : game.team1Score}
+							{game.team1Score < 0 ? '' : game.team1Score}
 						</TableBodyCell>
 						<TableBodyCell class="w-1/4 py-2">{game.team2Name}</TableBodyCell>
 						<TableBodyCell
@@ -82,13 +91,13 @@
 								? 'text-green-500'
 								: 'text-red-500'}"
 						>
-							{game.team2Score === undefined ? '' : game.team2Score}
+							{game.team2Score < 0 ? '' : game.team2Score}
 						</TableBodyCell>
 						{#if $isAdmin}
 							<TableBodyCell class="px-6 py-0">
 								<button
 									on:click={() => {
-										openModal(game._id);
+										openModal(game._id, game.team1Name, game.team2Name);
 									}}
 								>
 									<EditOutline class="text-theme h-7 w-7 content-center " />
@@ -112,11 +121,11 @@
 							>
 								<input type="hidden" name="gameId" value={$editingGame} />
 								<Label class="active:border-theme space-y-2">
-									<span>Team 1 ({game.team1Name}) Score</span>
+									<span>Team 1 ({$editingTeam1}) Score</span>
 									<Input type="number" name="team1Score" required />
 								</Label>
 								<Label class="space-y-2">
-									<span>Team 2 ({game.team2Name}) Score</span>
+									<span>Team 2 ({$editingTeam2}) Score</span>
 									<Input type="number" name="team2Score" required />
 								</Label>
 								<Button type="submit" class="w-full1 bg-theme hover:bg-hover">Confirm</Button>

@@ -14,6 +14,7 @@ import (
 func main() {
 	configs.ConnectDB()
 	stripe.Key = configs.GetStripeKey()
+	// models.InitiateTestTeams()
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/home", routes.HomeHandler)
 	mux.HandleFunc("GET /api/{event_slug}/teams", routes.TeamsHandler)

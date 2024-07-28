@@ -19,8 +19,8 @@ type PoolGame struct {
 	Team2      primitive.ObjectID `bson:"team2Id,omitempty" json:"team2Id,omitempty"`
 	Team1Name  string             `bson:"team1Name,omitempty" json:"team1Name,omitempty"`
 	Team2Name  string             `bson:"team2Name,omitempty" json:"team2Name,omitempty"`
-	Team1Score int                `bson:"team1Score,omitempty" json:"team1Score,omitempty"`
-	Team2Score int                `bson:"team2Score,omitempty" json:"team2Score,omitempty"`
+	Team1Score int                `bson:"team1Score,omitempty" json:"team1Score"`
+	Team2Score int                `bson:"team2Score,omitempty" json:"team2Score"`
 }
 
 func GetPool(_id primitive.ObjectID) PoolGame {
@@ -132,13 +132,15 @@ func SortPools(event string) {
 	for i, game := range gamesPlayed {
 		courts := [4]string{"A", "B", "C", "D"}
 		newGame := PoolGame{
-			Event:     event,
-			Round:     game.Round,
-			Court:     courts[i%len(courts)],
-			Team1:     game.Team1.ID,
-			Team2:     game.Team2.ID,
-			Team1Name: game.Team1.Name,
-			Team2Name: game.Team2.Name,
+			Event:      event,
+			Round:      game.Round,
+			Court:      courts[i%len(courts)],
+			Team1:      game.Team1.ID,
+			Team2:      game.Team2.ID,
+			Team1Name:  game.Team1.Name,
+			Team2Name:  game.Team2.Name,
+			Team1Score: -1,
+			Team2Score: -1,
 		}
 		InsertPool(newGame)
 	}

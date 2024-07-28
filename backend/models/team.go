@@ -17,8 +17,8 @@ type Team struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Name        string             `bson:"name,omitempty" json:"name,omitempty"`
 	Event       string             `bson:"event,omitempty" json:"event,omitempty"`
-	PoolsWon    int                `bson:"poolsWon,omitempty" json:"poolsWon,omitempty" default:"0"`
-	TotalPoints int                `bson:"totalPoints,omitempty" json:"totalPoints,omitempty" default:"0"`
+	PoolsWon    int                `bson:"poolsWon,omitempty" json:"poolsWon,omitempty"`
+	TotalPoints int                `bson:"totalPoints,omitempty" json:"totalPoints,omitempty"`
 	Seeding     int                `bson:"seeding,omitempty" json:"seeding,omitempty"`
 	Rank        int                `bson:"rank,omitempty" json:"rank,omitempty"`
 
@@ -145,4 +145,39 @@ func processCheckoutSessionTest(s *stripe.CheckoutSession) (Team, error) {
 		}
 	}
 	return team, nil
+}
+
+func InitiateTestTeams() {
+	_, err := configs.TeamsCollection.DeleteMany(context.TODO(), bson.D{})
+	if err != nil {
+		panic(err)
+	}
+	_, err = configs.PoolGamesCollection.DeleteMany(context.TODO(), bson.D{})
+	if err != nil {
+		panic(err)
+	}
+
+	newTeams := []interface{}{
+		Team{
+			Name:  "Team A",
+			Event: "5th-6th-boys",
+		},
+		Team{
+			Name:  "Team B",
+			Event: "5th-6th-boys",
+		},
+		Team{
+			Name:  "Team C",
+			Event: "5th-6th-boys",
+		},
+		Team{
+			Name:  "Team D",
+			Event: "5th-6th-boys",
+		},
+	}
+
+	_, err = configs.TeamsCollection.InsertMany(context.TODO(), newTeams)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
