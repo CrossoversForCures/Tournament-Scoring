@@ -34,7 +34,7 @@
 								? 'bg-bronze opacity-90'
 								: ''}
 				>
-					<TableBodyCell class="py-2"
+					<TableBodyCell class="w-1 py-2"
 						><div
 							class="text-lg {team.rank === 2 || team.rank === 3 ? 'text-white' : 'text-black'}"
 						>

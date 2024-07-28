@@ -41,15 +41,21 @@
 	<TableHead>
 		<TableHeadCell class="text-white">Time</TableHeadCell>
 		<TableHeadCell class="text-white">Division</TableHeadCell>
+		<TableHeadCell class="text-white">Status</TableHeadCell>
 	</TableHead>
 	<TableBody tableBodyClass="divide-y">
 		{#each data.events as event}
 			<TableBodyRow color="default" on:click={() => goto(`/${event.slug}/teams`)}>
-				<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
-					><div class="text-black">{event.time}</div></TableBodyCell
-				>
-				<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
-					><div class="text-black">{event.name}</div></TableBodyCell
+				<TableBodyCell class="w-1 py-2"><div class="text-black">{event.time}</div></TableBodyCell>
+				<TableBodyCell class="w-1/3 py-2"><div class="text-black">{event.name}</div></TableBodyCell>
+				<TableBodyCell class="py-2">
+					{#if event.status == undefined || event.status == 0}
+						<div class="text-red-500">Not Started</div>
+					{:else if event.status == 1 || event.status == 2}
+						<div class="text-yellow-500">In Progress</div>
+					{:else if event.status == 3}
+						<div class="text-green-500">Complete</div>
+					{/if}</TableBodyCell
 				>
 			</TableBodyRow>
 		{/each}

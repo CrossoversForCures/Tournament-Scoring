@@ -65,27 +65,27 @@
 			<TableBody>
 				{#each data.games[round] as game}
 					<TableBodyRow color="default">
-						<TableBodyCell class="w-1/10 py-2">
+						<TableBodyCell class="w-1/6 py-2">
 							Court {game.court}</TableBodyCell
 						>
-						<TableBodyCell class="w-1/6 py-2">{game.team1Name}</TableBodyCell>
+						<TableBodyCell class="w-1/4 py-2">{game.team1Name}</TableBodyCell>
 						<TableBodyCell
-							class="w-1/10 py-2 font-semibold {game.team1Score > game.team2Score
+							class="w-1/6 py-2 font-semibold {game.team1Score > game.team2Score
 								? 'text-green-500'
 								: 'text-red-500'}"
 						>
 							{game.team1Score === undefined ? '' : game.team1Score}
 						</TableBodyCell>
-						<TableBodyCell class="w-1/6 py-2">{game.team2Name}</TableBodyCell>
+						<TableBodyCell class="w-1/4 py-2">{game.team2Name}</TableBodyCell>
 						<TableBodyCell
-							class="w-1/10 py-2 font-semibold {game.team2Score > game.team1Score
+							class="w-1/6 py-2 font-semibold {game.team2Score > game.team1Score
 								? 'text-green-500'
 								: 'text-red-500'}"
 						>
 							{game.team2Score === undefined ? '' : game.team2Score}
 						</TableBodyCell>
 						{#if $isAdmin}
-							<TableBodyCell class="w-1/6 py-0">
+							<TableBodyCell class="px-6 py-0">
 								<button
 									on:click={() => {
 										openModal(game._id);
