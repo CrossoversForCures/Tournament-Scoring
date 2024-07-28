@@ -174,6 +174,10 @@ func InitiateTestTeams() {
 			Name:  "Team D",
 			Event: "5th-6th-boys",
 		},
+		Team{
+			Name:  "Team E",
+			Event: "5th-6th-boys",
+		},
 	}
 
 	_, err = configs.TeamsCollection.InsertMany(context.TODO(), newTeams)

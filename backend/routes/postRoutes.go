@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/CrossoversForCures/Tournament-Scoring/backend/models"
@@ -68,14 +69,13 @@ func UpdatePoolsHandler(w http.ResponseWriter, r *http.Request) {
 
 	models.UpdateTeam(team1.ID, team1Update)
 	models.UpdateTeam(team2.ID, team2Update)
+	fmt.Printf("Team 1 Score: %v, Team 2 Score: %v\n", team1Score, team2Score)
 
-	var winner models.Team
-	if newRequest.Team1Score > newRequest.Team2Score {
-		winner = team1
+	if team1Score > team2Score {
+		models.UpdateTeam(team1.ID, bson.D{{Key: "$set", Value: bson.D{{Key: "poolsWon", Value: team1.PoolsWon + 1}}}})
 	} else {
-		winner = team2
+		models.UpdateTeam(team2.ID, bson.D{{Key: "$set", Value: bson.D{{Key: "poolsWon", Value: team2.PoolsWon + 1}}}})
 	}
-	models.UpdateTeam(winner.ID, bson.D{{Key: "$set", Value: bson.D{{Key: "poolsWon", Value: winner.PoolsWon + 1}}}})
 
 	response := map[string]string{"response": "Game successfuly updated"}
 	json.NewEncoder(w).Encode(response)
