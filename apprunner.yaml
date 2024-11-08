@@ -1,4 +1,8 @@
 version: 1.0
 runtime: docker
 dockerfilePath: Dockerfile  
-port: 8000  
+port: 8000
+env:
+  variables:
+    DATABASE_URL: "mongodb+srv://crossoversforcures:Elevate4Epilepsy%402024@e4e2024.2osl2rd.mongodb.net/?retryWrites=true&w=majority&appName=E4E2024"
+    DATABASE_NAME: "tournament_scoring_base"
