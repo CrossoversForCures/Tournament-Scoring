@@ -3,17 +3,16 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/CrossoversForCures/Tournament-Scoring/backend/configs"
 	"github.com/CrossoversForCures/Tournament-Scoring/backend/routes"
 	"github.com/rs/cors"
-
-	"github.com/stripe/stripe-go/v79"
 )
 
 func main() {
 	configs.ConnectDB()
-	stripe.Key = configs.GetStripeKey()
+	//stripe.Key = configs.GetStripeKey()
 	// models.InitiateTestTeams()
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/home", routes.HomeHandler)
@@ -33,6 +32,6 @@ func main() {
 		AllowedHeaders: []string{"Content-Type", "Authorization"},
 	})
 	handler := corsOptions.Handler(mux)
-	fmt.Println("Starting server on port 8000")
-	http.ListenAndServe(":8000", handler)
+	fmt.Println("Starting server on port " + os.Getenv("PORT"))
+	http.ListenAndServe(":"+os.Getenv("PORT"), handler)
 }
