@@ -11,8 +11,6 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"start": "node --max-old-space-size=4096 server.js",
-		"predeploy": "npm run build",
-  		"deploy": "gh-pages -d build"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.0.0",
