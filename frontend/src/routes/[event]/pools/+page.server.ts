@@ -1,4 +1,5 @@
 import type { Actions } from './$types';
+const API_URL = import.meta.env.VITE_API_URL
 
 export const actions = {
     update: async ({ cookies, request }) => {
@@ -7,7 +8,7 @@ export const actions = {
         const team1Score = Number(data.get('team1Score'));
         const team2Score = Number(data.get('team2Score'));
 
-        const response = await fetch("http://localhost:8000/api/update-pool", {
+        const response = await fetch(`${API_URL}/api/update-pool`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',
@@ -16,7 +17,7 @@ export const actions = {
         });
     },
     start: async ({ params }) => {
-        const response = await fetch(`http://localhost:8000/api/${params.event}/start-pools`, {
+        const response = await fetch(`${API_URL}/api/${params.event}/start-pools`, {
             method: "POST"
         });
     }
